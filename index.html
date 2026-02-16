@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>MateKids - Modo Desafío</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MateKids PRO - Modo Desafío</title>
 <style>
 :root {
     --primary: #4CAF50;
@@ -17,97 +18,64 @@ body {
     margin: 0; padding: 0;
     background: linear-gradient(135deg,#74ebd5,#9face6);
     height: 100vh; display: flex; justify-content: center; align-items: center;
+    overflow: hidden;
 }
 
-/* Pantalla Principal */
 .main-menu {
-    background: white; width: 500px; padding: 40px;
+    background: white; width: 90%; max-width: 500px; padding: 30px;
     border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     text-align: center;
 }
 
-h1 { font-size: 38px; color: #333; margin-bottom: 10px; }
-h3 { color: #666; margin-top: 20px; }
-
-/* Botones */
 button {
-    padding: 15px 20px; margin: 8px; border: none;
-    border-radius: 15px; font-size: 18px; font-weight: bold;
+    padding: 15px; margin: 5px; border: none;
+    border-radius: 15px; font-size: 16px; font-weight: bold;
     cursor: pointer; transition: 0.2s; background: #eee;
     box-shadow: 0 4px 0 #ccc;
 }
 
 button:active { transform: translateY(3px); box-shadow: none; }
 .btn-level.activo { background: var(--primary); color: white; box-shadow: 0 4px 0 #2e7d32; }
-.btn-op { background: var(--secondary); font-size: 24px; box-shadow: 0 4px 0 #e6a139; }
+.btn-op { background: var(--secondary); font-size: 20px; box-shadow: 0 4px 0 #e6a139; min-width: 60px; }
 
-/* MODAL DEL JUEGO */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); display: none; 
+    background: rgba(0,0,0,0.85); display: none; 
     justify-content: center; align-items: center; z-index: 1000;
 }
 
 .modal-content {
-    background: white; width: 600px; padding: 30px;
+    background: white; width: 95%; max-width: 600px; padding: 20px;
     border-radius: 25px; text-align: center; position: relative;
-    animation: scaleIn 0.3s ease;
 }
 
-@keyframes scaleIn { from {transform: scale(0.8); opacity: 0;} to {transform: scale(1); opacity: 1;} }
-
-/* BARRA DE PROGRESO */
-.progress-container {
-    width: 100%; background: #eee; height: 30px;
-    border-radius: 15px; margin: 20px 0; overflow: hidden;
-    position: relative; border: 2px solid #ddd;
+#timer-display {
+    font-size: 24px; font-weight: bold; color: #333;
+    background: #eee; padding: 5px 15px; border-radius: 20px;
+    display: inline-block; margin-bottom: 10px;
 }
+.timer-low { color: var(--error) !important; animation: blink 0.5s infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
 
-.progress-bar {
-    height: 100%; width: 0%; background: var(--primary);
-    transition: width 0.4s ease;
-}
-
-/* CONTENEDORES DE IMÁGENES */
-.checkpoint-assets {
-    display: flex; justify-content: space-around; margin-bottom: 20px;
-}
-
+.checkpoint-assets { display: flex; justify-content: space-around; margin-bottom: 15px; }
 .asset-box {
-    width: 80px; height: 80px; 
-    border: 3px dashed #ccc;
-    border-radius: 15px; 
-    display: flex; align-items: center;
-    justify-content: center; 
-    opacity: 0.15; 
-    transition: all 0.5s ease;
-    overflow: hidden; 
-    background: #fafafa;
+    width: 70px; height: 70px; border: 3px dashed #ccc;
+    border-radius: 12px; opacity: 0.15; transition: 0.4s;
+    overflow: hidden; background: #fafafa;
+}
+.checkpoint-img { width: 100%; height: 100%; object-fit: cover; }
+.asset-box.unlocked { opacity: 1; border: 3px solid var(--primary); transform: scale(1.05); }
+
+.progress-container { width: 100%; background: #eee; height: 15px; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+.progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.4s; }
+
+#pregunta-txt { font-size: clamp(40px, 12vw, 60px); font-weight: bold; margin: 10px 0; }
+#input-resp { 
+    width: 140px; padding: 10px; font-size: 35px; text-align: center; 
+    border: 3px solid #ddd; border-radius: 15px; outline: none; background: #fff9c4;
 }
 
-.checkpoint-img {
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-    display: block;
-}
-
-.asset-box.unlocked {
-    opacity: 1; 
-    border: 3px solid var(--primary); 
-    transform: scale(1.1);
-    background: white;
-    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
-}
-
-#pregunta-txt { font-size: 50px; font-weight: bold; margin: 20px 0; color: #222; }
-#input-resp { width: 160px; padding: 10px; font-size: 35px; text-align: center; border: 3px solid #ddd; border-radius: 15px; outline: none; }
-#input-resp:focus { border-color: var(--secondary); }
-
-.close-btn {
-    position: absolute; top: 15px; right: 20px;
-    font-size: 30px; cursor: pointer; color: #999;
-}
+.close-btn { position: absolute; top: 10px; right: 15px; font-size: 35px; cursor: pointer; color: #bbb; }
 </style>
 </head>
 <body>
@@ -116,117 +84,154 @@ button:active { transform: translateY(3px); box-shadow: none; }
     <h1>🎯 MateKids PRO</h1>
     <h3>1. Elige tu Nivel</h3>
     <div>
-        <button id="n1" class="btn-level activo" onclick="setNivel(1, 10)">Nivel 1</button>
-        <button id="n2" class="btn-level" onclick="setNivel(2, 20)">Nivel 2</button>
-        <button id="n3" class="btn-level" onclick="setNivel(3, 30)">Nivel 3</button>
+        <button id="n1" class="btn-level activo" onclick="setNivel(1, 10, 60)">Nivel 1</button>
+        <button id="n2" class="btn-level" onclick="setNivel(2, 20, 120)">Nivel 2</button>
+        <button id="n3" class="btn-level" onclick="setNivel(3, 30, 180)">Nivel 3</button>
     </div>
-
-    <h3>2. ¡Empieza a Jugar!</h3>
+    <h3>2. ¡Operación!</h3>
     <div>
-        <button class="btn-op" onclick="abrirJuego('+')">➕ Suma</button>
-        <button class="btn-op" onclick="abrirJuego('-')">➖ Resta</button>
-        <button class="btn-op" onclick="abrirJuego('*')">✖ Multi</button>
-        <button class="btn-op" onclick="abrirJuego('/')">➗ Divi</button>
+        <button class="btn-op" onclick="abrirJuego('+')">➕</button>
+        <button class="btn-op" onclick="abrirJuego('-')">➖</button>
+        <button class="btn-op" onclick="abrirJuego('*')">✖</button>
+        <button class="btn-op" onclick="abrirJuego('/')">➗</button>
     </div>
 </div>
 
 <div id="modal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content" onclick="document.getElementById('input-resp').focus()">
         <span class="close-btn" onclick="cerrarJuego()">&times;</span>
-        <h2 id="titulo-modal">¡A jugar!</h2>
-        
+        <div id="timer-display">00:00</div>
         <div class="checkpoint-assets">
             <div id="cp1" class="asset-box"><img src="IMAGENES/1.jpeg" class="checkpoint-img"></div>
             <div id="cp2" class="asset-box"><img src="IMAGENES/2.jpeg" class="checkpoint-img"></div>
             <div id="cp3" class="asset-box"><img src="IMAGENES/3.jpeg" class="checkpoint-img"></div>
             <div id="cp4" class="asset-box"><img src="IMAGENES/7.jpeg" class="checkpoint-img"></div>
         </div>
-
         <div class="progress-container">
             <div id="bar" class="progress-bar"></div>
         </div>
-        <p id="progreso-texto">Progreso: 0 de 10</p>
-
+        <p id="progreso-texto" style="margin:0; font-weight:bold;">0 de 10</p>
         <div id="pregunta-txt">0 + 0</div>
-        <input type="number" id="input-resp" placeholder="?">
-        
-        <div id="mensaje-modal" style="height: 30px; margin-top: 15px; font-weight: bold; font-size: 20px;"></div>
-        <p style="font-size: 12px; color: #999; margin-top: 10px;">Presiona ENTER para enviar</p>
+        <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
+        <div id="mensaje-modal" style="height: 25px; margin-top: 10px; font-weight: bold;"></div>
     </div>
 </div>
 
 <script>
 let nivelActual = 1;
 let metaPreguntas = 10;
+let tiempoInicial = 60;
+let tiempoRestante = 60;
 let progresoActual = 0;
 let operacionActual = "";
 let n1, n2, resultadoCorrecto;
+let intervaloSegundos;
 
-function setNivel(n, meta) {
+const inputResp = document.getElementById('input-resp');
+const timerDisplay = document.getElementById('timer-display');
+
+// PRE-CARGA DE IA PARA MÓVILES
+window.speechSynthesis.getVoices(); 
+
+function setNivel(n, meta, segundos) {
     nivelActual = n;
     metaPreguntas = meta;
+    tiempoInicial = segundos;
     document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
     document.getElementById('n'+n).classList.add('activo');
+    // Despertar IA al interactuar
+    hablar(""); 
 }
 
 function abrirJuego(op) {
     operacionActual = op;
     progresoActual = 0;
+    tiempoRestante = tiempoInicial;
+    timerDisplay.classList.remove('timer-low');
     document.getElementById('modal').style.display = 'flex';
-    document.getElementById('titulo-modal').innerText = "Desafío de " + (op==='+'?'Sumas':op==='-'?'Restas':op==='*'?'Multiplicación':'División');
     actualizarProgreso();
     nuevaPregunta();
-    document.getElementById('input-resp').focus();
+    iniciarCronometro();
+    setTimeout(() => inputResp.focus(), 100);
 }
 
 function cerrarJuego() {
+    clearInterval(intervaloSegundos);
     document.getElementById('modal').style.display = 'none';
 }
 
+function iniciarCronometro() {
+    clearInterval(intervaloSegundos);
+    actualizarTimerUI();
+    intervaloSegundos = setInterval(() => {
+        tiempoRestante--;
+        actualizarTimerUI();
+        if(tiempoRestante <= 10 && tiempoRestante > 0) {
+            timerDisplay.classList.add('timer-low');
+            beep();
+        }
+        if(tiempoRestante <= 0) {
+            clearInterval(intervaloSegundos);
+            hablar("Se acabó el tiempo. Inténtalo de nuevo.");
+            alert("⏰ ¡TIEMPO AGOTADO!");
+            cerrarJuego();
+        }
+    }, 1000);
+}
+
+function actualizarTimerUI() {
+    let min = Math.floor(tiempoRestante / 60);
+    let seg = tiempoRestante % 60;
+    timerDisplay.innerText = `${min < 10 ? '0'+min : min}:${seg < 10 ? '0'+seg : seg}`;
+}
+
 function nuevaPregunta() {
-    let max = nivelActual * 10;
+    let max = (nivelActual === 1) ? 9 : nivelActual * 10;
     n1 = Math.floor(Math.random() * max) + 1;
     n2 = Math.floor(Math.random() * max) + 1;
 
     if(operacionActual === "/") {
-        resultadoCorrecto = Math.floor(Math.random() * 9) + 1;
-        n2 = Math.floor(Math.random() * 9) + 1;
+        let divMax = (nivelActual === 1) ? 5 : 10; 
+        resultadoCorrecto = Math.floor(Math.random() * divMax) + 1;
+        n2 = Math.floor(Math.random() * divMax) + 1;
         n1 = resultadoCorrecto * n2;
     } else if(operacionActual === "-") {
         if(n1 < n2) [n1, n2] = [n2, n1];
         resultadoCorrecto = n1 - n2;
     } else if(operacionActual === "*") {
-        n1 = Math.floor(Math.random() * 10) + 1;
-        n2 = Math.floor(Math.random() * 10) + 1;
+        if(nivelActual === 1) {
+            n1 = Math.floor(Math.random() * 9) + 1;
+            n2 = Math.floor(Math.random() * 9) + 1;
+        }
         resultadoCorrecto = n1 * n2;
     } else {
         resultadoCorrecto = n1 + n2;
     }
 
-    document.getElementById('pregunta-txt').innerText = `${n1} ${operacionActual === '*' ? '×' : operacionActual === '/' ? '÷' : operacionActual} ${n2} = ?`;
-    document.getElementById('input-resp').value = "";
-    document.getElementById('input-resp').focus();
+    document.getElementById('pregunta-txt').innerText = `${n1} ${operacionActual === '*' ? '×' : operacionActual === '/' ? '÷' : operacionActual} ${n2}`;
+    inputResp.value = "";
 }
 
-document.getElementById('input-resp').addEventListener('keydown', function(e) {
+inputResp.addEventListener('keydown', function(e) {
     if(e.key === "Enter") {
         let r = Number(this.value);
         if(this.value === "") return;
 
         if(r === resultadoCorrecto) {
             progresoActual++;
-            mostrarMensaje("✅ ¡Muy bien!", "#4CAF50");
+            mostrarMensaje("✅ ¡Bien!", "#4CAF50");
         } else {
             progresoActual = Math.max(0, progresoActual - 1);
-            mostrarMensaje("❌ ¡Oh no! -1", "#f44336");
+            if(progresoActual === 0) {
+                hablar("Está mal, tú puedes hacerlo bien");
+            }
+            mostrarMensaje("❌ ¡Error! -1", "#f44336");
         }
-        
         actualizarProgreso();
-        
         if(progresoActual >= metaPreguntas) {
-            setTimeout(finalizarJuego, 500);
+            finalizarJuego();
         } else {
-            setTimeout(nuevaPregunta, 600);
+            setTimeout(nuevaPregunta, 500);
         }
     }
 });
@@ -234,31 +239,47 @@ document.getElementById('input-resp').addEventListener('keydown', function(e) {
 function actualizarProgreso() {
     let porcentaje = (progresoActual / metaPreguntas) * 100;
     document.getElementById('bar').style.width = porcentaje + "%";
-    document.getElementById('progreso-texto').innerText = `Progreso: ${progresoActual} de ${metaPreguntas}`;
-
+    document.getElementById('progreso-texto').innerText = `${progresoActual} de ${metaPreguntas}`;
     document.getElementById('cp1').className = "asset-box " + (porcentaje >= 25 ? "unlocked" : "");
     document.getElementById('cp2').className = "asset-box " + (porcentaje >= 50 ? "unlocked" : "");
     document.getElementById('cp3').className = "asset-box " + (porcentaje >= 75 ? "unlocked" : "");
     document.getElementById('cp4').className = "asset-box " + (porcentaje >= 100 ? "unlocked" : "");
 }
 
+function hablar(texto) {
+    if (!texto) return; // Evita hablar si está vacío
+    window.speechSynthesis.cancel(); 
+    
+    // Pequeño truco: crear la instancia justo al momento de hablar
+    const v = new SpeechSynthesisUtterance(texto);
+    v.lang = 'es-ES';
+    v.pitch = 1.1; 
+    v.rate = 1.1; // Un poco más rápido ayuda a que parezca más reactivo
+    window.speechSynthesis.speak(v);
+}
+
+function beep() {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = context.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, context.currentTime);
+    osc.connect(context.destination);
+    osc.start();
+    osc.stop(context.currentTime + 0.1);
+}
+
 function mostrarMensaje(txt, color) {
     let m = document.getElementById('mensaje-modal');
-    m.innerText = txt;
-    m.style.color = color;
+    m.innerText = txt; m.style.color = color;
 }
 
 function finalizarJuego() {
-    // VOZ DE IA
-    const mensajeVoz = new SpeechSynthesisUtterance("¡Felicidades! Has completado el desafío.");
-    mensajeVoz.lang = 'es-ES';
-    mensajeVoz.pitch = 1.3; // Tono alegre
-    window.speechSynthesis.speak(mensajeVoz);
-
+    clearInterval(intervaloSegundos);
+    hablar("¡Felicidades! Has completado el desafío.");
     setTimeout(() => {
-        alert("¡FELICIDADES! 🎉 Reto superado.");
+        alert("¡Reto superado! 🎉");
         cerrarJuego();
-    }, 600);
+    }, 800);
 }
 </script>
 </body>
