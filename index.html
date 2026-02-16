@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">    
     <link rel="icon" type="image/png" href="IMAGENES/LOGO.jpeg">    
-    <title>MateKids - Diseño Limpio</title>
+    <title>MateKids PRO - ¡Desafío de Héroes!</title>
     <script src="accecibilidad.js"></script>    
     <style>
         :root {
@@ -22,13 +22,6 @@
             background: linear-gradient(135deg, #74EBD5 0%, #9FACE6 100%);
             height: 100vh; display: flex; justify-content: center; align-items: center;
             overflow: hidden;
-        }
-
-        /* Contenedor opcional para logo dentro de la app */
-        .logo-cabecera {
-            width: 80px;
-            height: auto;
-            margin-bottom: 10px;
         }
 
         .main-menu {
@@ -80,7 +73,12 @@
             border-radius: 10px; opacity: 0.2; transition: 0.4s;
             overflow: hidden; background: #fff;
         }
-        .asset-box.unlocked { opacity: 1; border-color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .asset-box.unlocked { 
+            opacity: 1; 
+            border-color: var(--primary); 
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            transform: scale(1.05); /* Escala suave que no mueve el contenedor */
+        }
         .checkpoint-img { width: 100%; height: 100%; object-fit: cover; }
 
         .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
@@ -98,6 +96,12 @@
         .row-error { color: var(--error); font-weight: bold; }
 
         .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #ccc; }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -137,7 +141,7 @@
             </div>
             <div id="pregunta-txt">---</div>
             <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
-            <div id="mensaje-modal" style="height: 25px; margin-top: 15px; font-weight: bold;"></div>
+            <div id="mensaje-modal" style="height: 25px; margin-top: 15px; font-weight: bold; transition: opacity 0.3s;"></div>
         </div>
 
         <div id="report-area" style="display:none">
@@ -160,12 +164,64 @@
 </div>
 
 <script>
-// El script se mantiene idéntico para asegurar el funcionamiento
 let nivelActual = 1, metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
 let operacionActual = "", n1, n2, resultadoCorrecto, intervaloSegundos, historialPreguntas = [], resultadosRecientes = [];
 
 const inputResp = document.getElementById('input-resp');
 const timerDisplay = document.getElementById('timer-display');
+
+// --- CELEBRACIONES ---
+
+function lanzarConfeti() {
+    for (let i = 0; i < 40; i++) {
+        const confeti = document.createElement('div');
+        confeti.innerHTML = ['✨','🌟','⭐','🎨'][Math.floor(Math.random()*4)];
+        confeti.style.position = 'fixed';
+        confeti.style.left = Math.random() * 100 + 'vw';
+        confeti.style.top = '-20px';
+        confeti.style.fontSize = (Math.random() * 20 + 15) + 'px';
+        confeti.style.zIndex = '200005';
+        confeti.style.pointerEvents = 'none';
+        document.body.appendChild(confeti);
+
+        confeti.animate([
+            { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+            { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+        ], { duration: Math.random() * 1500 + 1500, easing: 'ease-out' }).onfinish = () => confeti.remove();
+    }
+}
+
+function celebrarLogro(titulo, mensaje) {
+    const fab = document.getElementById('accFab'); 
+    if(fab) {
+        fab.animate([
+            { transform: 'scale(1) translateY(0)' },
+            { transform: 'scale(1.4) translateY(-30px)' },
+            { transform: 'scale(1) translateY(0)' }
+        ], { duration: 600, iterations: 2 });
+    }
+
+    const card = document.createElement('div');
+    card.style = `position:fixed; top:40%; left:50%; transform:translate(-50%, -50%); background:white; 
+                  border:8px solid var(--secondary); border-radius:30px; padding:30px; text-align:center; 
+                  z-index:200000; box-shadow:0 20px 60px rgba(0,0,0,0.6); font-family:sans-serif;
+                  animation: bounceIn 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.49); min-width:300px;`;
+    card.innerHTML = `
+        <h1 style="margin:0; color:var(--error); font-size:35px;">🏆 ¡${titulo}!</h1>
+        <p style="font-size:22px; color:#333; font-weight:bold; margin:15px 0;">${mensaje}</p>
+        <div style="font-size:60px">⭐🌟⭐</div>
+    `;
+    document.body.appendChild(card);
+
+    lanzarConfeti();
+    hablar(`¡Increíble! ${titulo}. ${mensaje}`);
+
+    setTimeout(() => {
+        card.animate([{opacity:1}, {opacity:0}], {duration:500}).onfinish = () => card.remove();
+    }, 4000);
+}
+
+// --- JUEGO ---
 
 function enfocarInput() {
     if(document.getElementById('game-area').style.display !== 'none') inputResp.focus();
@@ -175,7 +231,7 @@ function setNivel(n, meta, segundos) {
     nivelActual = n; metaPreguntas = meta; tiempoInicial = segundos;
     document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
     document.getElementById('n'+n).classList.add('activo');
-    hablar(""); 
+    hablar("Nivel " + n); 
 }
 
 function abrirJuego(op) {
@@ -188,17 +244,21 @@ function abrirJuego(op) {
     setTimeout(enfocarInput, 150);
 }
 
-function cerrarJuego() { clearInterval(intervaloSegundos); document.getElementById('modal').style.display = 'none'; }
+function cerrarJuego() { 
+    clearInterval(intervaloSegundos); 
+    document.getElementById('modal').style.display = 'none'; 
+}
 
 function iniciarCronometro() {
     clearInterval(intervaloSegundos);
+    timerDisplay.classList.remove('timer-low');
     actualizarTimerUI();
     intervaloSegundos = setInterval(() => {
         tiempoRestante--;
         actualizarTimerUI();
         if(tiempoRestante <= 10 && tiempoRestante > 0) {
             timerDisplay.classList.add('timer-low');
-            beep();
+            beep(400, 0.1);
         }
         if(tiempoRestante <= 0) {
             clearInterval(intervaloSegundos);
@@ -228,8 +288,8 @@ function generarValores() {
         if(t1 < t2) [t1, t2] = [t2, t1];
         tr = t1 - t2;
     } else if(operacionActual === "*") {
-        t1 = Math.floor(Math.random() * (nivelActual === 1 ? 9 : 10)) + 1;
-        t2 = Math.floor(Math.random() * (nivelActual === 1 ? 9 : 10)) + 1;
+        t1 = Math.floor(Math.random() * (nivelActual === 1 ? 5 : 10)) + 1;
+        t2 = Math.floor(Math.random() * (nivelActual === 1 ? 5 : 10)) + 1;
         tr = t1 * t2;
     } else {
         t1 = Math.floor(Math.random() * max) + 1;
@@ -241,14 +301,10 @@ function generarValores() {
 
 function nuevaPregunta() {
     let valores;
-    do {
-        valores = generarValores();
-    } while (resultadosRecientes.filter(x => x === valores.res).length >= 2);
-
+    do { valores = generarValores(); } while (resultadosRecientes.filter(x => x === valores.res).length >= 2);
     n1 = valores.n1; n2 = valores.n2; resultadoCorrecto = valores.res;
     resultadosRecientes.push(resultadoCorrecto);
     if(resultadosRecientes.length > 6) resultadosRecientes.shift();
-
     document.getElementById('pregunta-txt').innerText = `${n1} ${operacionActual === '*' ? '×' : operacionActual === '/' ? '÷' : operacionActual} ${n2}`;
     inputResp.value = "";
     enfocarInput();
@@ -258,22 +314,24 @@ inputResp.addEventListener('keydown', function(e) {
     if(e.key === "Enter") {
         let r = Number(this.value);
         if(this.value === "") return;
-        historialPreguntas.push({ pregunta: document.getElementById('pregunta-txt').innerText, usuario: r, correcta: resultadoCorrecto, esBien: (r === resultadoCorrecto) });
+        const esBien = (r === resultadoCorrecto);
+        historialPreguntas.push({ pregunta: document.getElementById('pregunta-txt').innerText, usuario: r, correcta: resultadoCorrecto, esBien });
 
-        if(r === resultadoCorrecto) {
+        if(esBien) {
             progresoActual++;
-            mostrarMensaje("✅ ¡Bien!", "var(--primary)");
+            mostrarMensaje("✅ ¡Muy bien!", "var(--primary)");
+            beep(800, 0.1);
         } else {
             progresoActual = Math.max(0, progresoActual - 1);
-            if(progresoActual === 0) hablar("Tú puedes hacerlo bien");
-            mostrarMensaje("❌ ¡Error!", "var(--error)");
+            mostrarMensaje("❌ ¡Tú puedes!", "var(--error)");
+            hablar("Intenta otra vez");
         }
         actualizarProgreso();
         if(progresoActual >= metaPreguntas) {
-            hablar("Felicidades");
+            celebrarLogro("Héroe Matemático", "¡Desafío completado!");
             mostrarReporte("🎉 ¡COMPLETADO!");
         } else {
-            setTimeout(nuevaPregunta, 500);
+            setTimeout(nuevaPregunta, 400);
         }
     }
 });
@@ -293,31 +351,45 @@ function mostrarReporte(t) {
 function actualizarProgreso() {
     let p = (progresoActual / metaPreguntas) * 100;
     document.getElementById('bar').style.width = p + "%";
-    document.getElementById('cp1').className = "asset-box " + (p >= 25 ? "unlocked" : "");
-    document.getElementById('cp2').className = "asset-box " + (p >= 50 ? "unlocked" : "");
-    document.getElementById('cp3').className = "asset-box " + (p >= 75 ? "unlocked" : "");
-    document.getElementById('cp4').className = "asset-box " + (p >= 100 ? "unlocked" : "");
+    const checkPoints = [25, 50, 75, 100];
+    checkPoints.forEach((val, index) => {
+        const cp = document.getElementById('cp' + (index + 1));
+        if(p >= val && !cp.classList.contains('unlocked')) {
+            cp.classList.add('unlocked');
+            lanzarConfeti(); 
+        } else if (p < val) {
+            cp.classList.remove('unlocked');
+        }
+    });
 }
 
 function hablar(t) {
     if (!t) return;
     window.speechSynthesis.cancel();
     const v = new SpeechSynthesisUtterance(t);
-    v.lang = 'es-ES'; v.rate = 1.1;
+    v.lang = 'es-ES'; v.rate = 1.2; v.pitch = 1.1;
     window.speechSynthesis.speak(v);
 }
 
-function beep() {
-    const c = new (window.AudioContext || window.webkitAudioContext)();
-    const o = c.createOscillator();
-    o.frequency.setValueAtTime(800, c.currentTime);
-    o.connect(c.destination);
-    o.start(); o.stop(c.currentTime + 0.1);
+function beep(freq = 800, time = 0.1) {
+    try {
+        const c = new (window.AudioContext || window.webkitAudioContext)();
+        const o = c.createOscillator();
+        const g = c.createGain();
+        o.frequency.setValueAtTime(freq, c.currentTime);
+        o.connect(g);
+        g.connect(c.destination);
+        g.gain.exponentialRampToValueAtTime(0.00001, c.currentTime + time);
+        o.start(); o.stop(c.currentTime + time);
+    } catch(e) {}
 }
 
 function mostrarMensaje(t, c) {
     let m = document.getElementById('mensaje-modal');
     m.innerText = t; m.style.color = c;
+    m.style.opacity = '1';
+    // Se quita la animación de scale para evitar el movimiento de pantalla
+    setTimeout(() => { m.style.opacity = '0.7'; }, 400);
 }
 </script>
 </body>
