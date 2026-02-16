@@ -31,6 +31,7 @@
         }
 
         h1 { color: #333; margin-bottom: 10px; }
+        h3 { color: #555; margin-top: 20px; margin-bottom: 10px; }
 
         button {
             padding: 12px 18px; margin: 5px; border: 2px solid transparent;
@@ -39,6 +40,7 @@
         }
 
         .btn-level.activo { background: var(--primary); color: white; }
+        .btn-avatar.activo { background: #2196F3; color: white; border-color: #0d47a1; }
         .btn-op { background: var(--secondary); color: white; font-size: 22px; width: 65px; }
         button:active { transform: scale(0.95); }
 
@@ -69,15 +71,15 @@
             padding: 0 10px;
         }
         .asset-box {
-            width: 70px; height: 70px; border: 2px solid #eee;
-            border-radius: 10px; opacity: 0.2; transition: 0.4s;
-            overflow: hidden; background: #fff;
+            width: 80px; height: 80px; border: 2px solid #eee;
+            border-radius: 10px; opacity: 0; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden; background: #fff; transform: translateY(20px);
         }
         .asset-box.unlocked { 
             opacity: 1; 
             border-color: var(--primary); 
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-            transform: scale(1.05);
+            transform: scale(1.1) translateY(0);
         }
         .checkpoint-img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -108,6 +110,13 @@
 
 <div class="main-menu">
     <h1>🎯 MateKids PRO</h1>
+    
+    <h3>¿Quién juega hoy?</h3>
+    <div>
+        <button id="av-niño" class="btn-avatar activo" onclick="setAvatar('niño')">👦 Niño</button>
+        <button id="av-niña" class="btn-avatar" onclick="setAvatar('niña')">👧 Niña</button>
+    </div>
+
     <h3>Selecciona tu desafío</h3>
     <div>
         <button id="n1" class="btn-level activo" onclick="setNivel(1, 10, 60)">Nivel 1</button>
@@ -130,10 +139,10 @@
             <div id="timer-display">00:00</div>
             
             <div class="checkpoint-assets">
-                <div id="cp1" class="asset-box"><img src="IMAGENES/1.jpeg" class="checkpoint-img"></div>
-                <div id="cp2" class="asset-box"><img src="IMAGENES/2.jpeg" class="checkpoint-img"></div>
-                <div id="cp3" class="asset-box"><img src="IMAGENES/3.jpeg" class="checkpoint-img"></div>
-                <div id="cp4" class="asset-box"><img src="IMAGENES/7.jpeg" class="checkpoint-img"></div>
+                <div id="cp1" class="asset-box"><img src="" class="checkpoint-img"></div>
+                <div id="cp2" class="asset-box"><img src="" class="checkpoint-img"></div>
+                <div id="cp3" class="asset-box"><img src="" class="checkpoint-img"></div>
+                <div id="cp4" class="asset-box"><img src="" class="checkpoint-img"></div>
             </div>
 
             <div class="progress-container">
@@ -166,26 +175,80 @@
 <script>
 let nivelActual = 1, metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
 let operacionActual = "", n1, n2, resultadoCorrecto, intervaloSegundos, historialPreguntas = [], resultadosRecientes = [];
+let avatarSeleccionado = 'niño';
+
+const galerias = {
+    'niña': ['IMAGENES/jk1.jpeg', 'IMAGENES/jk2.jpeg', 'IMAGENES/jk3.jpeg', 'IMAGENES/jk4.jpeg'],
+    'niño': ['IMAGENES/1.jpeg', 'IMAGENES/2.jpeg', 'IMAGENES/3.jpeg', 'IMAGENES/7.jpeg']
+};
 
 const inputResp = document.getElementById('input-resp');
 const timerDisplay = document.getElementById('timer-display');
 
-// --- SISTEMA DE AUDIO ---
-let sndError = new Audio('SNDbien.mp3/Audio.mp3');
-let sndBien = new Audio('SNDbien.mp3/meeee.mp3');
-let sndTerminado = new Audio('SNDbien.mp3/Terminado.mp3');
+// SISTEMA DE AUDIOS MEJORADO PARA MÓVILES
+const sonidos = {
+    cero: new Audio('SNDbien.mp3/Cero.mp3'),
+    errorNormal: new Audio('SNDbien.mp3/Audio.mp3'),
+    falla: new Audio('SNDbien.mp3/falla.mp3'),
+    acierto1: new Audio('SNDbien.mp3/meeee.mp3'),
+    acierto2: new Audio('SNDbien.mp3/Progreso.mp3'),
+    final: new Audio('SNDbien.mp3/Terminado.mp3')
+};
+
+// Precarga y configuración
+Object.values(sonidos).forEach(s => {
+    s.preload = "auto";
+    s.load();
+});
+
+// Función para desbloquear audios en móviles (necesita un clic del usuario)
+function desbloquearAudios() {
+    Object.values(sonidos).forEach(s => {
+        s.play().then(() => {
+            s.pause();
+            s.currentTime = 0;
+        }).catch(() => {});
+    });
+    document.removeEventListener('click', desbloquearAudios);
+    document.removeEventListener('touchstart', desbloquearAudios);
+}
+document.addEventListener('click', desbloquearAudios);
+document.addEventListener('touchstart', desbloquearAudios);
 
 function detenerAudios() {
-    sndError.pause(); sndError.currentTime = 0;
-    sndBien.pause(); sndBien.currentTime = 0;
-    sndTerminado.pause(); sndTerminado.currentTime = 0;
+    Object.values(sonidos).forEach(s => {
+        s.pause();
+        s.currentTime = 0;
+    });
 }
 
-function sonarError() { detenerAudios(); sndError.play().catch(e => {}); }
-function sonarBien() { detenerAudios(); sndBien.play().catch(e => {}); }
-function sonarTerminado() { detenerAudios(); sndTerminado.play().catch(e => {}); }
+function sonarAcierto() {
+    detenerAudios();
+    const random = Math.random() < 0.5 ? sonidos.acierto1 : sonidos.acierto2;
+    random.play().catch(e => {});
+}
 
-// --- CELEBRACIONES ---
+function sonarError(puntosActuales) {
+    detenerAudios();
+    if (puntosActuales === 0) {       
+        sonidos.cero.play().catch(e => console.log("Error Cero.mp3", e));
+    } else {
+        const random = Math.random() < 0.5 ? sonidos.errorNormal : sonidos.falla;
+        random.play().catch(e => {});
+    }
+}
+
+function sonarFin() {
+    detenerAudios();
+    sonidos.final.play().catch(e => {});
+}
+
+// LÓGICA DEL JUEGO
+function setAvatar(tipo) {
+    avatarSeleccionado = tipo;
+    document.getElementById('av-niño').classList.toggle('activo', tipo === 'niño');
+    document.getElementById('av-niña').classList.toggle('activo', tipo === 'niña');
+}
 
 function lanzarConfeti() {
     for (let i = 0; i < 40; i++) {
@@ -218,16 +281,12 @@ function celebrarLogro(titulo, mensaje) {
         <div style="font-size:60px">⭐🌟⭐</div>
     `;
     document.body.appendChild(card);
-
     lanzarConfeti();
-    sonarTerminado(); // Sonar Terminado.mp3 en lugar de "hablar" felicidades
-
+    sonarFin();
     setTimeout(() => {
         card.animate([{opacity:1}, {opacity:0}], {duration:500}).onfinish = () => card.remove();
     }, 4000);
 }
-
-// --- LÓGICA DEL JUEGO ---
 
 function enfocarInput() { if(document.getElementById('game-area').style.display !== 'none') inputResp.focus(); }
 
@@ -240,6 +299,12 @@ function setNivel(n, meta, segundos) {
 function abrirJuego(op) {
     operacionActual = op; progresoActual = 0; tiempoRestante = tiempoInicial;
     historialPreguntas = []; resultadosRecientes = [];
+    
+    const fotos = galerias[avatarSeleccionado];
+    for(let i=0; i<4; i++) {
+        document.querySelector(`#cp${i+1} img`).src = fotos[i];
+    }
+
     document.getElementById('game-area').style.display = 'block';
     document.getElementById('report-area').style.display = 'none';
     document.getElementById('modal').style.display = 'flex';
@@ -263,7 +328,7 @@ function iniciarCronometro() {
         }
         if(tiempoRestante <= 0) {
             clearInterval(intervaloSegundos);
-            sonarError();
+            sonarError(0); 
             mostrarReporte("⏰ ¡TIEMPO AGOTADO!");
         }
     }, 1000);
@@ -302,10 +367,10 @@ function generarValores() {
 
 function nuevaPregunta() {
     let valores;
-    do { valores = generarValores(); } while (resultadosRecientes.filter(x => x === valores.res).length >= 2);
+    do { valores = generarValores(); } while (resultadosRecientes.includes(valores.res)); 
     n1 = valores.n1; n2 = valores.n2; resultadoCorrecto = valores.res;
     resultadosRecientes.push(resultadoCorrecto);
-    if(resultadosRecientes.length > 6) resultadosRecientes.shift();
+    if(resultadosRecientes.length > 8) resultadosRecientes.shift();
     document.getElementById('pregunta-txt').innerText = `${n1} ${operacionActual === '*' ? '×' : operacionActual === '/' ? '÷' : operacionActual} ${n2}`;
     inputResp.value = "";
     enfocarInput();
@@ -320,22 +385,24 @@ inputResp.addEventListener('keydown', function(e) {
 
         if(esBien) {
             progresoActual++;
-            // Si NO es la última pregunta, suena el "meeee" normal
-            if(progresoActual < metaPreguntas) {
-                sonarBien();
-            }
+            if(progresoActual < metaPreguntas) sonarAcierto();
             mostrarMensaje("✅ ¡Muy bien!", "var(--primary)");
         } else {
             progresoActual = Math.max(0, progresoActual - 1);
-            sonarError();
+            sonarError(progresoActual);
             mostrarMensaje("❌ ¡Tú puedes!", "var(--error)");
         }
         
         actualizarProgreso();
         
         if(progresoActual >= metaPreguntas) {
-            celebrarLogro("Héroe Matemático", "¡Desafío completado!");
-            mostrarReporte("🎉 ¡COMPLETADO!");
+            clearInterval(intervaloSegundos);
+            inputResp.disabled = true; 
+            setTimeout(() => {
+                celebrarLogro("Héroe Matemático", "¡Desafío completado!");
+                mostrarReporte("🎉 ¡COMPLETADO!");
+                inputResp.disabled = false;
+            }, 2000); 
         } else {
             setTimeout(nuevaPregunta, 400);
         }
@@ -360,17 +427,15 @@ function actualizarProgreso() {
     const checkPoints = [25, 50, 75, 100];
     checkPoints.forEach((val, index) => {
         const cp = document.getElementById('cp' + (index + 1));
-        if(p >= val && !cp.classList.contains('unlocked')) {
-            cp.classList.add('unlocked');
-            if(val < 100) lanzarConfeti(); 
-        } else if (p < val) { cp.classList.remove('unlocked'); }
+        if(p >= val) {
+            if(!cp.classList.contains('unlocked')) {
+                cp.classList.add('unlocked');
+                if(val < 100) lanzarConfeti(); 
+            }
+        } else {
+            cp.classList.remove('unlocked');
+        }
     });
-}
-
-function hablar(t) {
-    window.speechSynthesis.cancel();
-    const v = new SpeechSynthesisUtterance(t);
-    v.lang = 'es-ES'; window.speechSynthesis.speak(v);
 }
 
 function beep(freq = 800, time = 0.1) {
