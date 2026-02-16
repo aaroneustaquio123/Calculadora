@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MateKids PRO - Reporte de Desafío</title>
+<title>MateKids PRO - Desafío con Reporte</title>
 <style>
 :root {
     --primary: #4CAF50;
@@ -108,7 +108,7 @@ button:active { transform: translateY(3px); box-shadow: none; }
 </div>
 
 <div id="modal" class="modal-overlay">
-    <div class="modal-content" id="modal-content-area">
+    <div class="modal-content" id="modal-content-area" onclick="enfocarInput()">
         <span class="close-btn" onclick="cerrarJuego()">&times;</span>
         
         <div id="game-area">
@@ -142,9 +142,8 @@ button:active { transform: translateY(3px); box-shadow: none; }
                     <tbody id="report-body"></tbody>
                 </table>
             </div>
-            <button onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white;">Volver al Inicio</button>
+            <button onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white; box-shadow: 0 4px 0 #2e7d32;">Cerrar Reporte</button>
         </div>
-
     </div>
 </div>
 
@@ -162,7 +161,15 @@ let historialPreguntas = [];
 const inputResp = document.getElementById('input-resp');
 const timerDisplay = document.getElementById('timer-display');
 
+// Despertar IA
 window.speechSynthesis.getVoices(); 
+
+function enfocarInput() {
+    // Solo enfocar si el área de juego está visible
+    if(document.getElementById('game-area').style.display !== 'none') {
+        inputResp.focus();
+    }
+}
 
 function setNivel(n, meta, segundos) {
     nivelActual = n;
@@ -177,7 +184,7 @@ function abrirJuego(op) {
     operacionActual = op;
     progresoActual = 0;
     tiempoRestante = tiempoInicial;
-    historialPreguntas = []; // Reiniciar historial
+    historialPreguntas = [];
     
     document.getElementById('game-area').style.display = 'block';
     document.getElementById('report-area').style.display = 'none';
@@ -187,7 +194,7 @@ function abrirJuego(op) {
     actualizarProgreso();
     nuevaPregunta();
     iniciarCronometro();
-    setTimeout(() => inputResp.focus(), 100);
+    setTimeout(enfocarInput, 150);
 }
 
 function cerrarJuego() {
@@ -207,8 +214,8 @@ function iniciarCronometro() {
         }
         if(tiempoRestante <= 0) {
             clearInterval(intervaloSegundos);
-            mostrarReporte("⏰ ¡Se acabó el tiempo!");
             hablar("Se acabó el tiempo. Inténtalo de nuevo.");
+            mostrarReporte("⏰ ¡TIEMPO AGOTADO!");
         }
     }, 1000);
 }
@@ -244,6 +251,7 @@ function nuevaPregunta() {
 
     document.getElementById('pregunta-txt').innerText = `${n1} ${operacionActual === '*' ? '×' : operacionActual === '/' ? '÷' : operacionActual} ${n2}`;
     inputResp.value = "";
+    enfocarInput();
 }
 
 inputResp.addEventListener('keydown', function(e) {
@@ -252,7 +260,6 @@ inputResp.addEventListener('keydown', function(e) {
         if(r_val === "") return;
         let r = Number(r_val);
 
-        // Guardar en el historial
         historialPreguntas.push({
             pregunta: document.getElementById('pregunta-txt').innerText,
             usuario: r,
@@ -272,8 +279,8 @@ inputResp.addEventListener('keydown', function(e) {
         }
         actualizarProgreso();
         if(progresoActual >= metaPreguntas) {
-            mostrarReporte("🎉 ¡DESAFÍO COMPLETADO!");
             hablar("¡Felicidades! Has completado el desafío.");
+            mostrarReporte("🎉 ¡DESAFÍO COMPLETADO!");
         } else {
             setTimeout(nuevaPregunta, 500);
         }
