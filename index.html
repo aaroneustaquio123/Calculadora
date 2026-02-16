@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora para Niños</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f2f9ff;
+        }
+
+        h1 {
+            color: #0077cc;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background: #4CAF50;
+            color: white;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        input {
+            font-size: 18px;
+            padding: 5px;
+            width: 100px;
+            text-align: center;
+        }
+
+        #pregunta {
+            font-size: 22px;
+            margin: 20px;
+        }
+
+        #mensaje {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+
+        .nivel {
+            background: #2196F3;
+        }
+
+        .operacion {
+            background: #ff9800;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🎮 Calculadora para Niños</h1>
+
+    <h2>Selecciona un Nivel</h2>
+
+    <button class="nivel" onclick="elegirNivel(1)">Nivel 1</button>
+    <button class="nivel" onclick="elegirNivel(2)">Nivel 2</button>
+    <button class="nivel" onclick="elegirNivel(3)">Nivel 3</button>
+
+    <h2>Selecciona una Operación</h2>
+
+    <button class="operacion" onclick="elegirOperacion('+')">➕ Suma</button>
+    <button class="operacion" onclick="elegirOperacion('-')">➖ Resta</button>
+    <button class="operacion" onclick="elegirOperacion('*')">✖ Multiplicación</button>
+    <button class="operacion" onclick="elegirOperacion('/')">➗ División</button>
+
+    <div id="juego" style="display:none">
+
+        <div id="pregunta"></div>
+
+        <input type="number" id="respuesta" placeholder="Respuesta">
+
+        <br><br>
+
+        <button onclick="verificar()">Comprobar</button>
+
+        <div id="mensaje"></div>
+
+    </div>
+
+
+<script>
+
+let nivel = 1;
+let operacion = "+";
+let num1 = 0;
+let num2 = 0;
+let resultado = 0;
+
+
+// Elegir nivel
+function elegirNivel(n) {
+    nivel = n;
+    alert("Elegiste Nivel " + nivel);
+}
+
+
+// Elegir operación
+function elegirOperacion(op) {
+    operacion = op;
+    generarPregunta();
+}
+
+
+// Generar números según nivel
+function generarNumeros() {
+
+    if (nivel === 1) {
+        num1 = random(1, 10);
+        num2 = random(1, 10);
+    }
+
+    if (nivel === 2) {
+        num1 = random(5, 20);
+        num2 = random(5, 20);
+    }
+
+    if (nivel === 3) {
+        num1 = random(10, 50);
+        num2 = random(10, 50);
+    }
+
+}
+
+
+// Generar pregunta
+function generarPregunta() {
+
+    generarNumeros();
+
+    // Evitar división con decimales
+    if (operacion === "/") {
+        resultado = num1;
+        num2 = random(1, 10);
+        num1 = resultado * num2;
+    }
+
+    switch (operacion) {
+
+        case "+":
+            resultado = num1 + num2;
+            break;
+
+        case "-":
+            resultado = num1 - num2;
+            break;
+
+        case "*":
+            resultado = num1 * num2;
+            break;
+
+        case "/":
+            resultado = num1 / num2;
+            break;
+    }
+
+    document.getElementById("juego").style.display = "block";
+
+    document.getElementById("pregunta").innerHTML =
+        "¿Cuánto es: " + num1 + " " + operacion + " " + num2 + " ?";
+
+    document.getElementById("respuesta").value = "";
+    document.getElementById("mensaje").innerHTML = "";
+}
+
+
+// Verificar respuesta
+function verificar() {
+
+    let resp = Number(document.getElementById("respuesta").value);
+
+    if (resp === resultado) {
+
+        document.getElementById("mensaje").innerHTML =
+            "✅ ¡Muy bien! Correcto 🎉";
+
+        setTimeout(() => {
+            generarPregunta();
+        }, 1200);
+
+    } else {
+
+        document.getElementById("mensaje").innerHTML =
+            "❌ Intenta otra vez 😊";
+
+    }
+
+}
+
+
+// Número aleatorio
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+</script>
+
+</body>
+</html>
