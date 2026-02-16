@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MateKids PRO - Modo Desafío</title>
+<title>MateKids PRO - Reporte de Desafío</title>
 <style>
 :root {
     --primary: #4CAF50;
@@ -47,6 +47,7 @@ button:active { transform: translateY(3px); box-shadow: none; }
 .modal-content {
     background: white; width: 95%; max-width: 600px; padding: 20px;
     border-radius: 25px; text-align: center; position: relative;
+    max-height: 90vh; overflow-y: auto;
 }
 
 #timer-display {
@@ -59,7 +60,7 @@ button:active { transform: translateY(3px); box-shadow: none; }
 
 .checkpoint-assets { display: flex; justify-content: space-around; margin-bottom: 15px; }
 .asset-box {
-    width: 70px; height: 70px; border: 3px dashed #ccc;
+    width: 65px; height: 65px; border: 3px dashed #ccc;
     border-radius: 12px; opacity: 0.15; transition: 0.4s;
     overflow: hidden; background: #fafafa;
 }
@@ -69,13 +70,22 @@ button:active { transform: translateY(3px); box-shadow: none; }
 .progress-container { width: 100%; background: #eee; height: 15px; border-radius: 10px; margin: 10px 0; overflow: hidden; }
 .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.4s; }
 
-#pregunta-txt { font-size: clamp(40px, 12vw, 60px); font-weight: bold; margin: 10px 0; }
+#pregunta-txt { font-size: clamp(35px, 10vw, 55px); font-weight: bold; margin: 10px 0; }
 #input-resp { 
     width: 140px; padding: 10px; font-size: 35px; text-align: center; 
     border: 3px solid #ddd; border-radius: 15px; outline: none; background: #fff9c4;
 }
 
-.close-btn { position: absolute; top: 10px; right: 15px; font-size: 35px; cursor: pointer; color: #bbb; }
+/* REPORTE FINAL */
+.report-container { display: none; text-align: left; width: 100%; }
+.report-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+.report-table th, .report-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+.report-table th { background: #f8f9fa; }
+.row-correct { color: var(--primary); font-weight: bold; }
+.row-error { color: var(--error); font-weight: bold; }
+.correct-answer { background: #e8f5e9; padding: 2px 6px; border-radius: 5px; color: #2e7d32; }
+
+.close-btn { position: absolute; top: 10px; right: 15px; font-size: 35px; cursor: pointer; color: #bbb; z-index: 10; }
 </style>
 </head>
 <body>
@@ -98,22 +108,43 @@ button:active { transform: translateY(3px); box-shadow: none; }
 </div>
 
 <div id="modal" class="modal-overlay">
-    <div class="modal-content" onclick="document.getElementById('input-resp').focus()">
+    <div class="modal-content" id="modal-content-area">
         <span class="close-btn" onclick="cerrarJuego()">&times;</span>
-        <div id="timer-display">00:00</div>
-        <div class="checkpoint-assets">
-            <div id="cp1" class="asset-box"><img src="IMAGENES/1.jpeg" class="checkpoint-img"></div>
-            <div id="cp2" class="asset-box"><img src="IMAGENES/2.jpeg" class="checkpoint-img"></div>
-            <div id="cp3" class="asset-box"><img src="IMAGENES/3.jpeg" class="checkpoint-img"></div>
-            <div id="cp4" class="asset-box"><img src="IMAGENES/7.jpeg" class="checkpoint-img"></div>
+        
+        <div id="game-area">
+            <div id="timer-display">00:00</div>
+            <div class="checkpoint-assets">
+                <div id="cp1" class="asset-box"><img src="IMAGENES/1.jpeg" class="checkpoint-img"></div>
+                <div id="cp2" class="asset-box"><img src="IMAGENES/2.jpeg" class="checkpoint-img"></div>
+                <div id="cp3" class="asset-box"><img src="IMAGENES/3.jpeg" class="checkpoint-img"></div>
+                <div id="cp4" class="asset-box"><img src="IMAGENES/7.jpeg" class="checkpoint-img"></div>
+            </div>
+            <div class="progress-container">
+                <div id="bar" class="progress-bar"></div>
+            </div>
+            <p id="progreso-texto" style="margin:0; font-weight:bold;">0 de 10</p>
+            <div id="pregunta-txt">---</div>
+            <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
+            <div id="mensaje-modal" style="height: 25px; margin-top: 10px; font-weight: bold;"></div>
         </div>
-        <div class="progress-container">
-            <div id="bar" class="progress-bar"></div>
+
+        <div id="report-area" class="report-container">
+            <h2 id="report-title">Reporte del Desafío</h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Pregunta</th>
+                            <th>Tu Respuesta</th>
+                            <th>Correcta</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body"></tbody>
+                </table>
+            </div>
+            <button onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white;">Volver al Inicio</button>
         </div>
-        <p id="progreso-texto" style="margin:0; font-weight:bold;">0 de 10</p>
-        <div id="pregunta-txt">0 + 0</div>
-        <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
-        <div id="mensaje-modal" style="height: 25px; margin-top: 10px; font-weight: bold;"></div>
+
     </div>
 </div>
 
@@ -126,11 +157,11 @@ let progresoActual = 0;
 let operacionActual = "";
 let n1, n2, resultadoCorrecto;
 let intervaloSegundos;
+let historialPreguntas = [];
 
 const inputResp = document.getElementById('input-resp');
 const timerDisplay = document.getElementById('timer-display');
 
-// PRE-CARGA DE IA PARA MÓVILES
 window.speechSynthesis.getVoices(); 
 
 function setNivel(n, meta, segundos) {
@@ -139,7 +170,6 @@ function setNivel(n, meta, segundos) {
     tiempoInicial = segundos;
     document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
     document.getElementById('n'+n).classList.add('activo');
-    // Despertar IA al interactuar
     hablar(""); 
 }
 
@@ -147,8 +177,13 @@ function abrirJuego(op) {
     operacionActual = op;
     progresoActual = 0;
     tiempoRestante = tiempoInicial;
+    historialPreguntas = []; // Reiniciar historial
+    
+    document.getElementById('game-area').style.display = 'block';
+    document.getElementById('report-area').style.display = 'none';
     timerDisplay.classList.remove('timer-low');
     document.getElementById('modal').style.display = 'flex';
+    
     actualizarProgreso();
     nuevaPregunta();
     iniciarCronometro();
@@ -172,9 +207,8 @@ function iniciarCronometro() {
         }
         if(tiempoRestante <= 0) {
             clearInterval(intervaloSegundos);
+            mostrarReporte("⏰ ¡Se acabó el tiempo!");
             hablar("Se acabó el tiempo. Inténtalo de nuevo.");
-            alert("⏰ ¡TIEMPO AGOTADO!");
-            cerrarJuego();
         }
     }, 1000);
 }
@@ -214,8 +248,17 @@ function nuevaPregunta() {
 
 inputResp.addEventListener('keydown', function(e) {
     if(e.key === "Enter") {
-        let r = Number(this.value);
-        if(this.value === "") return;
+        let r_val = this.value;
+        if(r_val === "") return;
+        let r = Number(r_val);
+
+        // Guardar en el historial
+        historialPreguntas.push({
+            pregunta: document.getElementById('pregunta-txt').innerText,
+            usuario: r,
+            correcta: resultadoCorrecto,
+            esBien: (r === resultadoCorrecto)
+        });
 
         if(r === resultadoCorrecto) {
             progresoActual++;
@@ -229,12 +272,33 @@ inputResp.addEventListener('keydown', function(e) {
         }
         actualizarProgreso();
         if(progresoActual >= metaPreguntas) {
-            finalizarJuego();
+            mostrarReporte("🎉 ¡DESAFÍO COMPLETADO!");
+            hablar("¡Felicidades! Has completado el desafío.");
         } else {
             setTimeout(nuevaPregunta, 500);
         }
     }
 });
+
+function mostrarReporte(titulo) {
+    clearInterval(intervaloSegundos);
+    document.getElementById('game-area').style.display = 'none';
+    document.getElementById('report-area').style.display = 'block';
+    document.getElementById('report-title').innerText = titulo;
+
+    let body = document.getElementById('report-body');
+    body.innerHTML = "";
+
+    historialPreguntas.forEach(item => {
+        let fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td>${item.pregunta}</td>
+            <td class="${item.esBien ? 'row-correct' : 'row-error'}">${item.usuario} ${item.esBien ? '✓' : '✗'}</td>
+            <td><span class="correct-answer">${item.correcta}</span></td>
+        `;
+        body.appendChild(fila);
+    });
+}
 
 function actualizarProgreso() {
     let porcentaje = (progresoActual / metaPreguntas) * 100;
@@ -247,14 +311,12 @@ function actualizarProgreso() {
 }
 
 function hablar(texto) {
-    if (!texto) return; // Evita hablar si está vacío
+    if (!texto) return;
     window.speechSynthesis.cancel(); 
-    
-    // Pequeño truco: crear la instancia justo al momento de hablar
     const v = new SpeechSynthesisUtterance(texto);
     v.lang = 'es-ES';
     v.pitch = 1.1; 
-    v.rate = 1.1; // Un poco más rápido ayuda a que parezca más reactivo
+    v.rate = 1.1;
     window.speechSynthesis.speak(v);
 }
 
@@ -271,15 +333,6 @@ function beep() {
 function mostrarMensaje(txt, color) {
     let m = document.getElementById('mensaje-modal');
     m.innerText = txt; m.style.color = color;
-}
-
-function finalizarJuego() {
-    clearInterval(intervaloSegundos);
-    hablar("¡Felicidades! Has completado el desafío.");
-    setTimeout(() => {
-        alert("¡Reto superado! 🎉");
-        cerrarJuego();
-    }, 800);
 }
 </script>
 </body>
