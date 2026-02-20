@@ -328,22 +328,15 @@ const configFases = [
 
 // =====================================================
 // 🔒 CONTROL DEL BOTÓN "ATRÁS" DEL CELULAR
-// Usamos history.pushState para atrapar el botón atrás
-// y evitar que salga de juego.html
 // =====================================================
-window.addEventListener('load', function() {
-    // Empujamos un estado "juego" al historial
-    history.pushState({ pagina: 'juego' }, '', window.location.href);
-});
-
 window.addEventListener('popstate', function(event) {
-    // Si el modal está abierto, cerrarlo en vez de navegar atrás
+    // Si el modal está abierto, cerrarlo
     const modal = document.getElementById('modal');
     if (modal.style.display === 'flex') {
         cerrarJuego();
     }
-    // Siempre volvemos a empujar el estado para quedarnos en esta página
-    history.pushState({ pagina: 'juego' }, '', window.location.href);
+    // Siempre empujamos de vuelta para NO salir de esta página
+    history.pushState(null, '', window.location.href);
 });
 // =====================================================
 
@@ -361,8 +354,8 @@ function cambiarFoto(dir) {
 window.onload = function() {
     const nombre = localStorage.getItem('jugadorActual');
     if (nombre) document.getElementById('mensaje-bienvenida').innerText = "¡HOLA, " + nombre.toUpperCase() + "! ✨";
-    // Empujamos el estado inicial al cargar la página
-    history.pushState({ pagina: 'juego' }, '', window.location.href);
+    // Empujamos el estado inicial para que el botón atrás no salga de esta página
+    history.pushState(null, '', window.location.href);
 };
 
 let nivelActual = 1, metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
@@ -411,8 +404,8 @@ function abrirJuego(op) {
     document.getElementById('report-area').style.display = 'none';
     document.getElementById('modal').style.display = 'flex';
 
-    // Empujamos un estado "modal-abierto" para que el botón atrás lo capture
-    history.pushState({ pagina: 'juego', modal: 'abierto' }, '', window.location.href);
+    // Empujamos estado para que el botón atrás cierre el modal primero
+    history.pushState(null, '', window.location.href);
 
     actualizarProgreso();
     nuevaPregunta();
