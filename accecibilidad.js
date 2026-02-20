@@ -15,11 +15,29 @@
 
   /* Botón de Deku */
   #accFab {
-    position:fixed; bottom:20px; left:20px; width:70px; height:70px; 
-    border-radius:50%; background:var(--acc-primary); border:4px solid white;
-    box-shadow:0 8px 15px rgba(0,0,0,0.2); z-index:100000; cursor:pointer;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding:0; overflow:hidden;
+    position:fixed; 
+    bottom:20px; /* Posición por defecto en PC */
+    left:20px; 
+    width:70px; 
+    height:70px; 
+    border-radius:50%; 
+    background:var(--acc-primary); 
+    border:4px solid white;
+    box-shadow:0 8px 15px rgba(0,0,0,0.2); 
+    z-index:100000; 
+    cursor:pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    padding:0; 
+    overflow:hidden;
   }
+
+  /* AJUSTE PARA MÓVIL: Subimos el botón para que no tape el Numpad */
+  @media (max-width: 600px) {
+    #accFab {
+      bottom: 1px !important; 
+    }
+  }
+
   #accFab:hover { transform: scale(1.1) rotate(5deg); }
   #accFab img { width:100%; height:100%; object-fit:cover; }
   #accFab.right { right:20px; left:auto; }
@@ -85,12 +103,10 @@
     const html = document.documentElement;
     const body = document.body;
 
-    // 1. Tipografía Global
     body.style.fontSize = settings.fontSize + '%';
     body.style.letterSpacing = settings.letterSpacing + 'px';
     body.style.lineHeight = settings.lineHeight;
 
-    // 2. Modos de Clase
     html.classList.toggle('acc-big-cursor', settings.bigCursor);
     html.classList.toggle('acc-super-btns', settings.superBtns);
     html.classList.toggle('acc-no-anim', settings.stopAnimations);
@@ -98,12 +114,10 @@
     html.classList.remove('acc-align-left', 'acc-align-center');
     if(settings.align !== 'none') html.classList.add('acc-align-' + settings.align);
 
-    // 3. Filtros Daltónicos
     html.style.filter = 'none';
     if(settings.daltonic === 'protanopia') html.style.filter = "url('#protanopia-filter')";
     if(settings.daltonic === 'deuteranopia') html.style.filter = "url('#deuteranopia-filter')";
 
-    // 4. Guía y Overlay
     $('#accReadingGuide').style.display = settings.readingGuide ? 'block' : 'none';
     const ov = $('#accOverlay');
     if(settings.overlayColor !== 'none') { ov.style.display='block'; ov.style.backgroundColor=settings.overlayColor; }
@@ -124,7 +138,6 @@
   function buildUI() {
     const style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
 
-    // Nodos auxiliares
     document.body.insertAdjacentHTML('beforeend', `
       <div id="accOverlay"></div>
       <div id="accReadingGuide"></div>
@@ -167,7 +180,7 @@
           <div class="acc-tile" id="btn-p"><span class="ico">🍎</span><span>Daltónico 1</span></div>
           <div class="acc-tile" id="btn-d"><span class="ico">🍏</span><span>Daltónico 2</span></div>
           <div class="acc-tile" id="btn-anim"><span class="ico">⏸️</span><span>Pausar Web</span></div>
-          <div class="acc-tile" onclick="window.ttsFull()"><span class="ico">🔊</span><span>Leer Todo</span></div>
+          <div class="acc-tile" id="btn-read-all"><span class="ico">🔊</span><span>Leer Todo</span></div>
         </div>
 
         <div class="acc-section-title">📝 Alineación</div>
@@ -178,9 +191,9 @@
 
         <div class="acc-section-title">🖍️ Papel de Color</div>
         <div class="acc-grid">
-          <div class="acc-tile" style="background:#dbeafe" onclick="setAccC('#bbdefb')"><span>Azul</span></div>
-          <div class="acc-tile" style="background:#fce7f3" onclick="setAccC('#f8bbd0')"><span>Rosa</span></div>
-          <div class="acc-tile" style="background:#fff" onclick="setAccC('none')"><span>Normal</span></div>
+          <div class="acc-tile" style="background:#dbeafe" id="paper-blue"><span>Azul</span></div>
+          <div class="acc-tile" style="background:#fce7f3" id="paper-pink"><span>Rosa</span></div>
+          <div class="acc-tile" style="background:#fff" id="paper-none"><span>Normal</span></div>
         </div>
 
         <div style="margin-top:20px; display:flex; gap:10px;">
@@ -212,8 +225,11 @@
     $('#btn-p').onclick = () => { settings.daltonic = settings.daltonic === 'protanopia' ? 'none' : 'protanopia'; upd(); };
     $('#btn-d').onclick = () => { settings.daltonic = settings.daltonic === 'deuteranopia' ? 'none' : 'deuteranopia'; upd(); };
 
-    window.setAccC = (c) => { settings.overlayColor = c; upd(); };
-    window.ttsFull = () => { speak(document.body.innerText.substring(0, 1000)); };
+    $('#paper-blue').onclick = () => { settings.overlayColor = '#bbdefb'; upd(); };
+    $('#paper-pink').onclick = () => { settings.overlayColor = '#f8bbd0'; upd(); };
+    $('#paper-none').onclick = () => { settings.overlayColor = 'none'; upd(); };
+    
+    $('#btn-read-all').onclick = () => { speak(document.body.innerText.substring(0, 1000)); };
 
     $('#btn-pos').onclick = () => { settings.position = settings.position === 'left' ? 'right' : 'left'; upd(); };
     $('#btn-res').onclick = () => { if(confirm("¿Reiniciar?")){ settings = Object.assign({}, defaults); upd(); } };

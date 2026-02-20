@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    
+    <link rel="icon" type="image/png" href="IMAGENES/LOGO.jpeg">    
+    <title>MateKids PRO - ¡Desafío de Héroes!</title>
+    <script src="accecibilidad.js"></script>   
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --secondary: #FFB74D;
+            --error: #F44336;
+            --bg: #F0F4F8;
+            --combo: #FFD700;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: manipulation; }
+
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(135deg, #74EBD5 0%, #9FACE6 100%);
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- ESTILO DEL CARRUSEL --- */
+        .selector-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .carrusel-visor {
+            width: 140px;
+            height: 140px;
+            overflow: hidden;
+            border-radius: 50%;
+            border: 5px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: white;
+        }
+
+        .carrusel-visor img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .flecha-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        
+        #nombre-heroe {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* --- ESTILOS DE LA INTERFAZ --- */
+        #mensaje-bienvenida {
+            font-size: 2.5rem;
+            color: white;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-weight: 900;
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+
+        .main-menu {
+            background: white; width: 90%; max-width: 480px; padding: 20px;
+            border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center; position: relative; z-index: 10;
+        }
+
+        .grid-niveles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+
+        button {
+            padding: 10px; border: 2px solid transparent;
+            border-radius: 12px; font-size: 15px; font-weight: bold;
+            cursor: pointer; transition: 0.2s; background: #f0f0f0; color: #555;
+        }
+
+        .btn-level.activo { background: var(--primary); color: white; }
+        .btn-skull { background: #455a64; color: #ffeb3b; }
+        .btn-skull.activo { background: #000; color: #ffeb3b; border: 2px solid #ffeb3b; }
+        .btn-op { background: var(--secondary); color: white; font-size: 22px; width: 60px; margin: 4px; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; 
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .modal-content {
+            background: white; width: 95%; max-width: 550px; padding: 25px;
+            border-radius: 20px; text-align: center; position: relative;
+        }
+
+        .shake { animation: shake 0.4s; border: 3px solid var(--error); }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+
+        #timer-display {
+            font-size: 22px; font-weight: bold; color: #444;
+            background: #f8f8f8; padding: 5px 20px; border-radius: 30px;
+            display: inline-block; border: 1px solid #eee; margin-bottom: 15px;
+        }
+
+        .pista-progreso {
+            width: 100%; height: 140px; background: #f1f1f1;
+            border-radius: 15px; position: relative; margin: 15px 0;
+            border-bottom: 5px solid #ccc; overflow: visible;
+        }
+
+        .personaje-movil {
+            position: absolute; bottom: 10px; left: 0%; 
+            width: 100px; height: 100px; background: white;
+            border-radius: 50%; border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .personaje-movil img { width: 100%; height: 100%; object-fit: cover; }
+
+        .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.4s; }
+
+        #pregunta-txt { font-size: 50px; font-weight: bold; color: #222; margin: 15px 0; }
+        #input-resp { 
+            width: 130px; padding: 8px; font-size: 32px; text-align: center; 
+            border: 2px solid #ddd; border-radius: 10px; outline: none; background: #fffde7;
+        }
+
+        /* --- ESTILO BOTONES NUMPAD --- */
+        .numpad-container {
+            display: none; grid-template-columns: repeat(3, 1fr);
+            gap: 10px; max-width: 280px; margin: 20px auto 0;
+        }
+
+        .btn-numpad {
+            background: #eee; border: none; padding: 15px;
+            font-size: 20px; font-weight: bold; border-radius: 10px; color: #333;
+        }
+
+        .btn-doble-altura {
+            grid-row: span 2;
+            height: 100%;
+        }
+
+        .btn-x-debajo {
+            grid-column: 2;
+        }
+
+        /* ESTILO OBSERVACIONES */
+        #observaciones-area {
+            background: #f9f9f9;
+            border-left: 5px solid var(--secondary);
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+            color: #444;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 600px) {
+            #mensaje-bienvenida { font-size: 2rem; }
+            .pista-progreso { height: 90px; }
+            .personaje-movil { width: 70px; height: 70px; }
+            .numpad-container { display: grid; }
+            #input-resp { pointer-events: none; }
+        }
+
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .report-table th, .report-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #ccc; }
+    </style>
+</head>
+<body>
+
+<h1 id="mensaje-bienvenida">HOLA...</h1>
+
+<div class="main-menu">
+    <h1>🎯 MateKids PRO</h1>
+    
+    <p style="margin-bottom: 5px;">👤 Elige a tu Personaje</p>
+    <div class="selector-container">
+        <button class="flecha-btn" onclick="cambiarFoto(-1)">❮</button>
+        <div class="carrusel-visor">
+            <img id="img-selector" src="IMAGENES/deku.jpeg">
+        </div>
+        <button class="flecha-btn" onclick="cambiarFoto(1)">❯</button>
+    </div>
+    <div id="nombre-heroe">DEKU</div>
+
+    <p>Selecciona tu Nivel</p>
+    <div class="grid-niveles">
+        <button id="n1" class="btn-level activo" onclick="setNivel(1, 10, 60, false)">Nivel 1</button>
+        <button id="n1k" class="btn-level btn-skull" onclick="setNivel(1, 10, 60, true)">Nivel 1 💀</button>
+        <button id="n2" class="btn-level" onclick="setNivel(2, 20, 120, false)">Nivel 2</button>
+        <button id="n2k" class="btn-level btn-skull" onclick="setNivel(2, 20, 120, true)">Nivel 2 💀</button>
+        <button id="n3" class="btn-level" onclick="setNivel(3, 30, 180, false)">Nivel 3</button>
+        <button id="n3k" class="btn-level btn-skull" onclick="setNivel(3, 30, 180, true)">Nivel 3 💀</button>
+    </div>
+
+    <h3>Operación</h3>
+    <div id="ops-normal">
+        <button class="btn-op" onclick="abrirJuego('+')">+</button>
+        <button class="btn-op" onclick="abrirJuego('-')">-</button>
+        <button class="btn-op" onclick="abrirJuego('*')">×</button>
+        <button class="btn-op" onclick="abrirJuego('/')">÷</button>
+    </div>
+    <div id="ops-skull" style="display:none">
+        <button class="btn-op" style="width:100%; background:#000" onclick="abrirJuego('?')">DESAFÍO ALEATORIO 💀</button>
+    </div>
+</div>
+
+<div id="modal" class="modal-overlay">
+    <div class="modal-content" id="main-modal-content">
+        <span class="close-btn" onclick="cerrarJuego()">&times;</span>
+        <div id="game-area">
+            <div id="timer-display">00:00</div>
+            
+            <div class="pista-progreso">
+                <div id="contenedor-hero" class="personaje-movil">
+                    <img id="status-img" src="IMAGENES/deku.jpeg">
+                </div>
+            </div>
+
+            <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
+            <div id="pregunta-txt">---</div>
+            <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
+
+            <div class="numpad-container">
+                <button class="btn-numpad" onclick="agregarNumero(1)">1</button>
+                <button class="btn-numpad" onclick="agregarNumero(2)">2</button>
+                <button class="btn-numpad" onclick="agregarNumero(3)">3</button>
+                <button class="btn-numpad" onclick="agregarNumero(4)">4</button>
+                <button class="btn-numpad" onclick="agregarNumero(5)">5</button>
+                <button class="btn-numpad" onclick="agregarNumero(6)">6</button>
+                <button class="btn-numpad" onclick="agregarNumero(7)">7</button>
+                <button class="btn-numpad" onclick="agregarNumero(8)">8</button>
+                <button class="btn-numpad" onclick="agregarNumero(9)">9</button>
+                
+                <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">LISTO</button>
+                <button class="btn-numpad" onclick="agregarNumero(0)">0</button>
+                <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">LISTO</button>
+                
+                <button class="btn-numpad btn-x-debajo" style="background:var(--error); color:white" onclick="limpiarTodo()">X</button>
+            </div>
+            
+            <div id="mensaje-modal" style="height: 25px; margin-top: 15px; font-weight: bold;"></div>
+        </div>
+
+        <div id="report-area" style="display:none">
+            <h2 id="report-title">Reporte</h2>
+            <div id="observaciones-area"></div>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <table class="report-table">
+                    <thead><tr><th>Reto</th><th>Tú</th><th>Correcto</th></tr></thead>
+                    <tbody id="report-body"></tbody>
+                </table>
+            </div>
+            <button onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white; border:none; padding:15px; border-radius:10px">Volver</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const misPersonajes = [
+    { n: 'Messi', img: 'IMAGENES/Messi.jpeg' },
+    { n: 'CR7', img: 'IMAGENES/CR7.jpeg' },
+    { n: 'Pikachu', img: 'IMAGENES/Pikachu.jpeg' },
+    { n: 'Goku', img: 'IMAGENES/Goku.jpeg' },
+    { n: 'Luffy', img: 'IMAGENES/Luffy.jpeg' },
+    { n: 'DEKU', img: 'IMAGENES/deku.jpeg' },
+    { n: 'Jungkook', img: 'IMAGENESNIÑAS/Jungkook.png' },
+    { n: 'Ladybug', img: 'IMAGENESNIÑAS/ladybug.png' },
+    { n: 'Masha', img: 'IMAGENESNIÑAS/Masha.png' },
+    { n: 'Moana', img: 'IMAGENESNIÑAS/moana.png' }
+];
+
+let indexHeroe = 5; 
+let personajeElegido = misPersonajes[indexHeroe].img;
+
+function cambiarFoto(dir) {
+    indexHeroe += dir;
+    if (indexHeroe < 0) indexHeroe = misPersonajes.length - 1;
+    if (indexHeroe >= misPersonajes.length) indexHeroe = 0;
+    
+    const p = misPersonajes[indexHeroe];
+    document.getElementById('img-selector').src = p.img;
+    document.getElementById('nombre-heroe').innerText = p.n.toUpperCase();
+    personajeElegido = p.img;
+    document.getElementById('status-img').src = p.img; 
+}
+
+window.onload = function() {
+    const nombre = localStorage.getItem('jugadorActual');
+    if (nombre) document.getElementById('mensaje-bienvenida').innerText = "¡HOLA, " + nombre.toUpperCase() + "! ✨";
+};
+
+let nivelActual = 1, metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
+let operacionElegida = "", n1, n2, resultadoCorrecto, intervaloSegundos, historialPreguntas = [];
+let respuestasUsadas = new Set(); // REGISTRO DE RESPUESTAS YA SALIDAS
+
+const sonidos = {
+    cero: new Audio('SNDbien.mp3/Cero.mp3'),
+    falla: new Audio('SNDbien.mp3/falla.mp3'),
+    audioError: new Audio('SNDbien.mp3/Audio.mp3'),
+    acierto1: new Audio('SNDbien.mp3/meeee.mp3'),
+    acierto2: new Audio('SNDbien.mp3/Progreso.mp3'),
+    final: new Audio('SNDbien.mp3/Terminado.mp3')
+};
+
+function detenerAudios() { Object.values(sonidos).forEach(s => { s.pause(); s.currentTime = 0; }); }
+function agregarNumero(n) { document.getElementById('input-resp').value += n; }
+function limpiarTodo() { document.getElementById('input-resp').value = ""; }
+function enviarRespuesta() { validarLogica(); }
+
+function setNivel(n, meta, seg, skull) {
+    nivelActual = n; metaPreguntas = meta; tiempoInicial = seg;
+    document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
+    document.getElementById(skull ? `n${n}k` : `n${n}`).classList.add('activo');
+    document.getElementById('ops-normal').style.display = skull ? 'none' : 'block';
+    document.getElementById('ops-skull').style.display = skull ? 'block' : 'none';
+}
+
+function abrirJuego(op) {
+    operacionElegida = op; progresoActual = 0; tiempoRestante = tiempoInicial;
+    historialPreguntas = [];
+    respuestasUsadas.clear(); // Limpiar el registro al iniciar juego nuevo
+    document.getElementById('status-img').src = personajeElegido; 
+    document.getElementById('game-area').style.display = 'block';
+    document.getElementById('report-area').style.display = 'none';
+    document.getElementById('modal').style.display = 'flex';
+    actualizarProgreso(); nuevaPregunta(); iniciarCronometro();
+}
+
+function generarLogicaPregunta() {
+    let intentosLoop = 0;
+    let v;
+    
+    while (intentosLoop < 100) {
+        let op = operacionElegida === '?' ? ['+','-','*','/'][Math.floor(Math.random()*4)] : operacionElegida;
+        let t1, t2, res;
+        
+        if(nivelActual === 1) {
+            if(op === '/') { res = Math.floor(Math.random()*8)+2; t2 = Math.floor(Math.random()*4)+2; t1 = res*t2; }
+            else if(op === '*') { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*9)+1; res = t1*t2; }
+            else if(op === '-') { t1 = Math.floor(Math.random()*12)+1; t2 = Math.floor(Math.random()*t1)+1; res = t1-t2; }
+            else { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*9)+1; res = t1+t2; }
+        } else if(nivelActual === 2) {
+            if(op === '/') { res = Math.floor(Math.random()*20)+5; t2 = Math.floor(Math.random()*7)+2; t1 = res*t2; }
+            else if(op === '*') { t1 = Math.floor(Math.random()*12)+2; t2 = Math.floor(Math.random()*11)+2; res = t1*t2; }
+            else if(op === '-') { t1 = Math.floor(Math.random()*40)+10; t2 = Math.floor(Math.random()*30)+5; res = t1-t2; }
+            else { t1 = Math.floor(Math.random()*40)+10; t2 = Math.floor(Math.random()*40)+10; res = t1+t2; }
+        } else {
+            if(op === '/') { res = Math.floor(Math.random()*50)+10; t2 = Math.floor(Math.random()*12)+2; t1 = res*t2; }
+            else if(op === '*') { t1 = Math.floor(Math.random()*25)+5; t2 = Math.floor(Math.random()*15)+2; res = t1*t2; }
+            else if(op === '-') { t1 = Math.floor(Math.random()*90)+50; t2 = Math.floor(Math.random()*40)+10; res = t1-t2; }
+            else { t1 = Math.floor(Math.random()*80)+20; t2 = Math.floor(Math.random()*80)+20; res = t1+t2; }
+        }
+
+        // VALIDAR QUE LA RESPUESTA (RES) SEA DIFERENTE A LAS ANTERIORES
+        if (!respuestasUsadas.has(res)) {
+            v = { t1, t2, res, op };
+            break; 
+        }
+        intentosLoop++;
+    }
+    
+    // Si el loop falla por falta de combinaciones (raro), devolvemos la última generada
+    if(!v) v = { t1: Math.floor(Math.random()*5)+1, t2: Math.floor(Math.random()*5)+1, res: 99, op: '+' };
+    
+    return v;
+}
+
+function nuevaPregunta() {
+    let v = generarLogicaPregunta();
+    n1 = v.t1; n2 = v.t2; resultadoCorrecto = v.res;
+    document.getElementById('pregunta-txt').innerText = `${n1} ${v.op==='*'?'×':v.op==='/'?'÷':v.op} ${n2}`;
+    document.getElementById('input-resp').value = "";
+    mostrarMensaje("", "");
+    if(window.innerWidth > 600) document.getElementById('input-resp').focus();
+}
+
+function validarLogica() {
+    let input = document.getElementById('input-resp');
+    let r = Number(input.value); if(input.value === "") return;
+    let esBien = (r === resultadoCorrecto);
+    historialPreguntas.push({ txt: document.getElementById('pregunta-txt').innerText, u: r, c: resultadoCorrecto, ok: esBien });
+
+    if(esBien) {
+        respuestasUsadas.add(resultadoCorrecto); // GUARDAR RESPUESTA PARA QUE NO SALGA OTRA VEZ
+        progresoActual++;
+        if(progresoActual >= metaPreguntas) {
+            detenerAudios(); sonidos.final.play();
+            mostrarReporte("🏆 ¡EXCELENTE!");
+        } else {
+            detenerAudios(); (Math.random()<0.5 ? sonidos.acierto1 : sonidos.acierto2).play();
+            mostrarMensaje("✅ ¡BIEN!", "var(--primary)");
+            setTimeout(nuevaPregunta, 400);
+        }
+    } else {
+        // Restamos un punto
+        progresoActual = Math.max(0, progresoActual - 1);
+        
+        document.getElementById('main-modal-content').classList.add('shake');
+        setTimeout(() => document.getElementById('main-modal-content').classList.remove('shake'), 400);
+        
+        detenerAudios();
+        
+        // --- LÓGICA DE AUDIOS INTERCALADOS Y PRIORIDAD CERO ---
+        if (progresoActual === 0) {
+            // Si el puntaje es cero, este sonido tiene la prioridad
+            sonidos.cero.play();
+        } else {
+            // Si aún tienes puntos, elige uno de los dos fallos al azar
+            if (Math.random() < 0.5) {
+                sonidos.falla.play();
+            } else {
+                new Audio('SNDbien.mp3/Audio.mp3').play();
+            }
+        }
+        // ------------------------------------------------------
+
+        mostrarMensaje("❌ ¡ERROR!", "var(--error)");
+        setTimeout(nuevaPregunta, 400);
+    }
+    actualizarProgreso();
+}
+document.getElementById('input-resp').addEventListener('keydown', e => { if(e.key === "Enter") validarLogica(); });
+
+function actualizarProgreso() {
+    let p = (progresoActual / metaPreguntas) * 100;
+    document.getElementById('bar').style.width = p + "%";
+    document.getElementById('contenedor-hero').style.left = (p * 0.75) + "%"; 
+}
+
+function iniciarCronometro() {
+    clearInterval(intervaloSegundos);
+    intervaloSegundos = setInterval(() => {
+        tiempoRestante--;
+        let m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
+        document.getElementById('timer-display').innerText = `${m}:${s<10?'0'+s:s}`;
+        if(tiempoRestante <= 0) { clearInterval(intervaloSegundos); mostrarReporte("⏰ TIEMPO AGOTADO"); }
+    }, 1000);
+}
+
+function mostrarReporte(t) {
+    clearInterval(intervaloSegundos);
+    const nombre = (localStorage.getItem('jugadorActual') || "HEROE").toUpperCase();
+    document.getElementById('game-area').style.display = 'none';
+    document.getElementById('report-area').style.display = 'block';
+    document.getElementById('report-title').innerText = nombre + ", ESTE ES TU REPORTE";
+    
+    let aciertos = historialPreguntas.filter(p => p.ok).length;
+    let fallos = historialPreguntas.length - aciertos;
+    let obsTxt = "";
+
+    if(fallos === 0) {
+        obsTxt = "✨ ¡EXCELENTE " + nombre + "! Eres un genio, sigue así.";
+    } else if(aciertos > fallos) {
+        obsTxt = "👍 ¡VAMOS " + nombre + "! Sigue así mejorando, lo estás haciendo genial.";
+    } else {
+        obsTxt = "💪 " + nombre + ", tú puedes mejorar, ¡no te rindas!";
+    }
+
+    document.getElementById('observaciones-area').innerText = obsTxt;
+    document.getElementById('report-body').innerHTML = historialPreguntas.map(i => `<tr><td>${i.txt}</td><td style="color:${i.ok?'green':'red'}">${i.u}</td><td>${i.c}</td></tr>`).join('');
+}
+
+function cerrarJuego() { clearInterval(intervaloSegundos); detenerAudios(); document.getElementById('modal').style.display = 'none'; }
+function mostrarMensaje(t, c) { let m = document.getElementById('mensaje-modal'); m.innerText = t; m.style.color = c; }
+</script>
+</body>
+</html>

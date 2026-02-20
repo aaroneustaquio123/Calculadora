@@ -2,419 +2,168 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    
-    <link rel="icon" type="image/png" href="IMAGENES/LOGO.jpeg">    
-    <title>MateKids PRO - ¡Desafío de Héroes!</title>
-    <script src="accecibilidad.js"></script>   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <script src="accecibilidad.js"></script>
     <style>
-        :root {
-            --primary: #4CAF50;
-            --secondary: #FFB74D;
-            --error: #F44336;
-            --bg: #F0F4F8;
-        }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: manipulation; }
-
+        /* Estilos Generales */
         body {
-            margin: 0; padding: 0;
-            background: linear-gradient(135deg, #74EBD5 0%, #9FACE6 100%);
-            height: 100vh; display: flex; justify-content: center; align-items: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #46178f; /* Morado Kahoot */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
             overflow: hidden;
         }
 
-        .main-menu {
-            background: white; width: 90%; max-width: 480px; padding: 30px;
-            border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        /* Contenedor Principal */
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            width: 350px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .grid-niveles {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+        /* El Muñequito (Avatar) mejorado */
+        .avatar-container {
+            position: relative;
+            width: 100px;
+            height: 130px;
+            margin: 0 auto 25px;
         }
 
-        button {
-            padding: 12px; border: 2px solid transparent;
-            border-radius: 12px; font-size: 16px; font-weight: bold;
-            cursor: pointer; transition: 0.2s; background: #f0f0f0; color: #555;
+        .avatar {
+            width: 100px;
+            height: 120px;
+            background-color: #ffffff;
+            border-radius: 50px 50px 20px 20px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2;
         }
 
-        .btn-level.activo { background: var(--primary); color: white; }
-        .btn-skull { background: #455a64; color: #ffeb3b; }
-        .btn-skull.activo { background: #000; color: #ffeb3b; border: 2px solid #ffeb3b; }
+        /* Ojos del muñeco */
+        .avatar::before, .avatar::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #333;
+            border-radius: 50%;
+            top: 45px;
+        }
+        .avatar::before { left: 30px; }
+        .avatar::after { right: 30px; }
 
-        .btn-op { background: var(--secondary); color: white; font-size: 22px; width: 65px; margin: 5px; }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; 
-            justify-content: center; align-items: center; z-index: 1000;
+        /* "Ropa" del muñeco */
+        .clothes {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #2d9ee0; /* Color azul como la imagen */
+            border-radius: 0 0 20px 20px;
         }
 
-        .modal-content {
-            background: white; width: 95%; max-width: 550px; padding: 25px;
-            border-radius: 20px; text-align: center; position: relative;
-        }
-
-        #timer-display {
-            font-size: 22px; font-weight: bold; color: #444;
-            background: #f8f8f8; padding: 5px 20px; border-radius: 30px;
-            display: inline-block; border: 1px solid #eee; margin-bottom: 15px;
-        }
-
-        .pista-progreso {
-            width: 100%; 
-            height: 180px; 
-            background: #f1f1f1;
-            border-radius: 15px; position: relative; margin: 15px 0;
-            border-bottom: 5px solid #ccc; 
-            overflow: visible; 
-        }
-
-        .personaje-movil {
-            position: absolute; 
-            bottom: 10px; 
-            left: 0%; 
-            width: 160px; 
-            height: 160px; 
-            background: white;
-            border-radius: 50%; 
-            border: 5px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            overflow: hidden; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-        }
-
-        .personaje-movil img { 
-            width: 85%; 
-            height: 85%; 
-            object-fit: contain; 
-        }
-        .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
-        .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.4s; }
-
-        #pregunta-txt { font-size: 55px; font-weight: bold; color: #222; margin: 20px 0; }
-        #input-resp { 
-            width: 140px; padding: 10px; font-size: 35px; text-align: center; 
-            border: 2px solid #ddd; border-radius: 10px; outline: none; background: #fffde7;
-        }
-
-        /* --- TECLADO PARA MÓVILES --- */
-        .numpad-container {
-            display: none; 
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 280px;
-            margin: 20px auto 0;
-        }
-
-        .btn-numpad {
-            background: #eee;
-            border: none;
-            padding: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 10px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-numpad:active { background: #ccc; }
-        
-        /* LISTO VERTICAL: Ocupa 2 filas */
-        .btn-enter-tactil { 
-            background: var(--primary); 
-            color: white; 
-            font-size: 14px;
-            grid-row: span 2; 
-            height: 100%;
-        }
-        
-        /* X ROJA: Centrada debajo del 0 */
-        .btn-clear-tactil { 
-            background: var(--error); 
-            color: white; 
-            grid-column: 2;
+        h2 {
+            margin-bottom: 25px;
             font-size: 24px;
+            font-weight: bold;
         }
 
-        @media (max-width: 600px) {
-            .main-menu { padding: 15px; width: 95%; }
-            .modal-content { padding: 15px; width: 98%; }
-            #pregunta-txt { font-size: 40px; margin: 10px 0; }
-            .pista-progreso { height: 90px; }
-            .personaje-movil { width: 80px; height: 80px; }
-            #input-resp { width: 120px; font-size: 28px; pointer-events: none; } 
-            .numpad-container { display: grid; } 
-            .btn-op { width: 55px; font-size: 18px; }
+        /* Campo de texto */
+        input[type="text"] {
+            width: 90%;
+            padding: 15px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 20px;
+            outline: none;
+            font-weight: bold;
+            color: #333;
+            transition: border 0.3s;
         }
 
-        .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .report-table th, .report-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        .row-correct { color: var(--primary); font-weight: bold; }
-        .row-error { color: var(--error); font-weight: bold; }
-        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #ccc; }
-
-        @keyframes bounceIn {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        input[type="text"]:focus {
+            border: 2px solid #2d9ee0;
         }
+
+        /* Botón de inicio */
+        .btn-start {
+            width: 100%;
+            padding: 15px;
+            background-color: #333333;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 0px #000;
+        }
+
+        .btn-start:hover {
+            background-color: #111;
+        }
+
+        .btn-start:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0px #000;
+        }
+
     </style>
 </head>
 <body>
 
-<div class="main-menu">
-    <h1>🎯 MateKids PRO</h1>
-    <h3>Selecciona tu Nivel</h3>
-    <div class="grid-niveles">
-        <button id="n1" class="btn-level activo" onclick="setNivel(1, 10, 60, false)">Nivel 1</button>
-        <button id="n1k" class="btn-level btn-skull" onclick="setNivel(1, 10, 60, true)">Nivel 1 💀</button>
-        <button id="n2" class="btn-level" onclick="setNivel(2, 20, 120, false)">Nivel 2</button>
-        <button id="n2k" class="btn-level btn-skull" onclick="setNivel(2, 20, 120, true)">Nivel 2 💀</button>
-        <button id="n3" class="btn-level" onclick="setNivel(3, 30, 180, false)">Nivel 3</button>
-        <button id="n3k" class="btn-level btn-skull" onclick="setNivel(3, 30, 180, true)">Nivel 3 💀</button>
-    </div>
-
-    <h3 id="op-title">Operación</h3>
-    <div id="ops-normal">
-        <button class="btn-op" onclick="abrirJuego('+')">+</button>
-        <button class="btn-op" onclick="abrirJuego('-')">-</button>
-        <button class="btn-op" onclick="abrirJuego('*')">×</button>
-        <button class="btn-op" onclick="abrirJuego('/')">÷</button>
-    </div>
-    <div id="ops-skull" style="display:none">
-        <button class="btn-op" style="width:100%; background:#000" onclick="abrirJuego('?')">DESAFÍO ALEATORIO 💀</button>
-    </div>
-</div>
-
-<div id="modal" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="cerrarJuego()">&times;</span>
-        <div id="game-area">
-            <div id="timer-display">00:00</div>
-            
-            <div class="pista-progreso">
-                <div id="contenedor-hero" class="personaje-movil">
-                    <img id="status-img" src="IMAGENES/jk1.jpeg">
-                </div>
+    <div class="container">
+        <div class="avatar-container">
+            <div class="avatar">
+                <div class="clothes"></div>
             </div>
-
-            <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
-            <div id="pregunta-txt">---</div>
-            <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
-
-            <div class="numpad-container" id="numpad">
-                <button class="btn-numpad" onclick="agregarNumero(1)">1</button>
-                <button class="btn-numpad" onclick="agregarNumero(2)">2</button>
-                <button class="btn-numpad" onclick="agregarNumero(3)">3</button>
-                <button class="btn-numpad" onclick="agregarNumero(4)">4</button>
-                <button class="btn-numpad" onclick="agregarNumero(5)">5</button>
-                <button class="btn-numpad" onclick="agregarNumero(6)">6</button>
-                <button class="btn-numpad" onclick="agregarNumero(7)">7</button>
-                <button class="btn-numpad" onclick="agregarNumero(8)">8</button>
-                <button class="btn-numpad" onclick="agregarNumero(9)">9</button>
-                
-                <button class="btn-numpad btn-enter-tactil" onclick="enviarRespuesta()">LISTO</button>
-                <button class="btn-numpad" onclick="agregarNumero(0)">0</button>
-                <button class="btn-numpad btn-enter-tactil" onclick="enviarRespuesta()">LISTO</button>
-                
-                <button class="btn-numpad btn-clear-tactil" onclick="limpiarTodo()">X</button>
-            </div>
-
-            <div id="mensaje-modal" style="height: 25px; margin-top: 15px; font-weight: bold;"></div>
         </div>
-        <div id="report-area" style="display:none">
-            <h2 id="report-title">Reporte</h2>
-            <div style="max-height: 300px; overflow-y: auto;">
-                <table class="report-table">
-                    <thead><tr><th>Reto</th><th>Tú</th><th>Correcto</th></tr></thead>
-                    <tbody id="report-body"></tbody>
-                </table>
-            </div>
-            <button onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white; border:none; padding:15px; border-radius:10px">Volver</button>
-        </div>
+        
+        <h2>¡Bienvenido!</h2>
+        
+        <input type="text" id="nombreUsuario" placeholder="Ingresa tu nombre" maxlength="15" autocomplete="off">
+        <button class="btn-start" onclick="validarYRedirigir()">¡Listo para jugar!</button>
     </div>
-</div>
 
-<script>
-let nivelActual = 1, metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
-let operacionElegida = "", n1, n2, resultadoCorrecto, intervaloSegundos, historialPreguntas = [], resultadosRecientes = [];
+    <script>
+        function validarYRedirigir() {
+            const inputNombre = document.getElementById('nombreUsuario');
+            const nombre = inputNombre.value.trim();
 
-const sonidos = {
-    cero: new Audio('SNDbien.mp3/Cero.mp3'),
-    error: new Audio('SNDbien.mp3/Audio.mp3'),
-    falla: new Audio('SNDbien.mp3/falla.mp3'),
-    acierto1: new Audio('SNDbien.mp3/meeee.mp3'),
-    acierto2: new Audio('SNDbien.mp3/Progreso.mp3'),
-    final: new Audio('SNDbien.mp3/Terminado.mp3')
-};
-
-function detenerAudios() { Object.values(sonidos).forEach(s => { s.pause(); s.currentTime = 0; }); }
-
-function agregarNumero(n) { document.getElementById('input-resp').value += n; }
-
-function limpiarTodo() {
-    document.getElementById('input-resp').value = "";
-}
-
-function enviarRespuesta() {
-    validarLogica();
-}
-
-function lanzarConfeti() {
-    for (let i = 0; i < 40; i++) {
-        const confeti = document.createElement('div');
-        confeti.innerHTML = ['✨','🌟','⭐','🎨'][Math.floor(Math.random()*4)];
-        confeti.style.position = 'fixed';
-        confeti.style.left = Math.random() * 100 + 'vw';
-        confeti.style.top = '-20px';
-        confeti.style.fontSize = (Math.random() * 20 + 15) + 'px';
-        confeti.style.zIndex = '200005';
-        confeti.style.pointerEvents = 'none';
-        document.body.appendChild(confeti);
-
-        confeti.animate([
-            { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
-            { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
-        ], { duration: Math.random() * 1500 + 1500, easing: 'ease-out' }).onfinish = () => confeti.remove();
-    }
-}
-
-function celebrarLogro(titulo, mensaje) {
-    const card = document.createElement('div');
-    card.style = `position:fixed; top:40%; left:50%; transform:translate(-50%, -50%); background:white; 
-                  border:8px solid var(--secondary); border-radius:30px; padding:30px; text-align:center; 
-                  z-index:200000; box-shadow:0 20px 60px rgba(0,0,0,0.6); font-family:sans-serif;
-                  animation: bounceIn 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.49); min-width:300px;`;
-    card.innerHTML = `<h1 style="margin:0; color:var(--error); font-size:35px;">🏆 ¡${titulo}!</h1>
-                      <p style="font-size:22px; color:#333; font-weight:bold; margin:15px 0;">${mensaje}</p>
-                      <div style="font-size:60px">⭐🌟⭐</div>`;
-    document.body.appendChild(card);
-    lanzarConfeti();
-    setTimeout(() => {
-        card.animate([{opacity:1}, {opacity:0}], {duration:500}).onfinish = () => card.remove();
-    }, 3000);
-}
-
-function setNivel(n, meta, seg, skull) {
-    nivelActual = n; metaPreguntas = meta; tiempoInicial = seg;
-    document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
-    document.getElementById(skull ? `n${n}k` : `n${n}`).classList.add('activo');
-    document.getElementById('ops-normal').style.display = skull ? 'none' : 'block';
-    document.getElementById('ops-skull').style.display = skull ? 'block' : 'none';
-}
-
-function abrirJuego(op) {
-    operacionElegida = op; progresoActual = 0; tiempoRestante = tiempoInicial;
-    historialPreguntas = []; resultadosRecientes = [];
-    document.getElementById('game-area').style.display = 'block';
-    document.getElementById('report-area').style.display = 'none';
-    document.getElementById('modal').style.display = 'flex';
-    actualizarProgreso(); nuevaPregunta(); iniciarCronometro();
-}
-
-function generarLogicaPregunta() {
-    let op = operacionElegida === '?' ? ['+','-','*','/'][Math.floor(Math.random()*4)] : operacionElegida;
-    let t1, t2, res;
-
-    if(nivelActual === 1) {
-        if(op === '/') { res = Math.floor(Math.random()*8)+2; t2 = Math.floor(Math.random()*4)+2; t1 = res*t2; }
-        else if(op === '*') { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*9)+1; res = t1*t2; }
-        else if(op === '-') { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*t1)+1; res = t1-t2; }
-        else { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*9)+1; res = t1+t2; }
-    } else if(nivelActual === 2) {
-        if(op === '/') { res = Math.floor(Math.random()*20)+5; t2 = Math.floor(Math.random()*7)+2; t1 = res*t2; }
-        else if(op === '*') { t1 = Math.floor(Math.random()*12)+2; t2 = Math.floor(Math.random()*11)+2; res = t1*t2; }
-        else if(op === '-') { t1 = Math.floor(Math.random()*40)+10; t2 = Math.floor(Math.random()*30)+5; res = t1-t2; }
-        else { t1 = Math.floor(Math.random()*40)+10; t2 = Math.floor(Math.random()*40)+10; res = t1+t2; }
-    } else {
-        if(op === '/') { res = Math.floor(Math.random()*50)+10; t2 = Math.floor(Math.random()*12)+2; t1 = res*t2; }
-        else if(op === '*') { t1 = Math.floor(Math.random()*25)+5; t2 = Math.floor(Math.random()*15)+2; res = t1*t2; }
-        else if(op === '-') { t1 = Math.floor(Math.random()*90)+50; t2 = Math.floor(Math.random()*40)+10; res = t1-t2; }
-        else { t1 = Math.floor(Math.random()*80)+20; t2 = Math.floor(Math.random()*80)+20; res = t1+t2; }
-    }
-    return { t1, t2, res, op };
-}
-
-function nuevaPregunta() {
-    let v; do { v = generarLogicaPregunta(); } while (resultadosRecientes.includes(v.res));
-    n1 = v.t1; n2 = v.t2; resultadoCorrecto = v.res;
-    resultadosRecientes.push(v.res); if(resultadosRecientes.length > 10) resultadosRecientes.shift();
-    document.getElementById('pregunta-txt').innerText = `${n1} ${v.op==='*'?'×':v.op==='/'?'÷':v.op} ${n2}`;
-    document.getElementById('input-resp').value = "";
-    if(window.innerWidth > 600) document.getElementById('input-resp').focus();
-}
-
-function validarLogica() {
-    let input = document.getElementById('input-resp');
-    let r = Number(input.value); if(input.value === "") return;
-    let esBien = (r === resultadoCorrecto);
-    historialPreguntas.push({ txt: document.getElementById('pregunta-txt').innerText, u: r, c: resultadoCorrecto, ok: esBien });
-    if(esBien) {
-        progresoActual++;
-        if(progresoActual >= metaPreguntas) {
-            detenerAudios(); sonidos.final.play();
-            celebrarLogro("¡HÉROE!", "Desafío completado");
-            mostrarReporte("🏆 ¡EXCELENTE!");
-        } else {
-            detenerAudios(); (Math.random()<0.5 ? sonidos.acierto1 : sonidos.acierto2).play();
-            mostrarMensaje("✅ ¡BIEN!", "var(--primary)");
-            setTimeout(nuevaPregunta, 400);
+            if (nombre === "") {
+                // Alerta simple si está vacío
+                alert("Por favor, escribe un nombre para continuar.");
+                inputNombre.focus();
+            } else {
+                // Guarda el nombre para usarlo en la siguiente página (Opcional)
+                localStorage.setItem('jugadorActual', nombre);
+                
+                // CAMBIA "juego.html" por el nombre de tu archivo de destino
+                window.location.href = "juego.html";
+            }
         }
-    } else {
-        progresoActual = Math.max(0, progresoActual - 1);
-        detenerAudios(); (progresoActual === 0 ? sonidos.cero : sonidos.falla).play();
-        mostrarMensaje("❌ ¡ERROR!", "var(--error)");
-        setTimeout(nuevaPregunta, 400);
-    }
-    actualizarProgreso();
-}
 
-document.getElementById('input-resp').addEventListener('keydown', function(e) {
-    if(e.key === "Enter") {
-        validarLogica();
-    }
-});
+        // Permitir presionar "Enter" para enviar
+        document.getElementById('nombreUsuario').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                validarYRedirigir();
+            }
+        });
+    </script>
 
-function actualizarProgreso() {
-    let p = (progresoActual / metaPreguntas) * 100;
-    document.getElementById('bar').style.width = p + "%";
-    const hero = document.getElementById('contenedor-hero');
-    const img = document.getElementById('status-img');
-    hero.style.left = (p * 0.70) + "%"; 
-    let ruta = p>=75 ? "jk4.png" : p>=50 ? "jk3.png" : p>=25 ? "jk2.png" : "jk1.png";
-    if(!img.src.includes(ruta)) {
-        img.style.opacity = "0";
-        setTimeout(() => { img.src = "IMAGENES/"+ruta; img.style.opacity = "1"; }, 250);
-    }
-}
-
-function iniciarCronometro() {
-    clearInterval(intervaloSegundos);
-    intervaloSegundos = setInterval(() => {
-        tiempoRestante--;
-        let m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
-        document.getElementById('timer-display').innerText = `${m}:${s<10?'0'+s:s}`;
-        if(tiempoRestante <= 0) { clearInterval(intervaloSegundos); sonidos.cero.play(); mostrarReporte("⏰ TIEMPO AGOTADO"); }
-    }, 1000);
-}
-
-function mostrarReporte(t) {
-    clearInterval(intervaloSegundos);
-    document.getElementById('game-area').style.display = 'none';
-    document.getElementById('report-area').style.display = 'block';
-    document.getElementById('report-title').innerText = t;
-    document.getElementById('report-body').innerHTML = historialPreguntas.map(i => `<tr><td>${i.txt}</td><td class="${i.ok?'row-correct':'row-error'}">${i.u}</td><td>${i.c}</td></tr>`).join('');
-}
-
-function cerrarJuego() { clearInterval(intervaloSegundos); detenerAudios(); document.getElementById('modal').style.display = 'none'; }
-function mostrarMensaje(t, c) { let m = document.getElementById('mensaje-modal'); m.innerText = t; m.style.color = c; }
-</script>
 </body>
 </html>
