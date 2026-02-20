@@ -24,86 +24,185 @@
             overflow: hidden;
         }
 
-        /* --- ESTILO DEL CARRUSEL --- */
-        .selector-container {
-            position: relative;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 10px 0;
-        }
-
-        .carrusel-visor {
-            width: 140px;
-            height: 140px;
-            overflow: hidden;
-            border-radius: 50%;
-            border: 5px solid var(--primary);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        /* --- BOTÓN DE PROGRESO (esquina superior derecha) --- */
+        #btn-progreso {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 500;
             background: white;
-        }
-
-        .carrusel-visor img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .flecha-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 35px;
-            height: 35px;
+            border: 3px solid var(--primary);
             border-radius: 50%;
-            font-size: 18px;
+            width: 52px;
+            height: 52px;
+            font-size: 24px;
             cursor: pointer;
-            margin: 0 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             transition: 0.2s;
+            padding: 0;
         }
-        
-        #nombre-heroe {
-            font-weight: bold;
+        #btn-progreso:active { transform: scale(0.92); }
+
+        /* --- MODAL DE PROGRESO --- */
+        #modal-progreso {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
+            display: none; justify-content: center; align-items: center;
+            z-index: 900;
+        }
+        #modal-progreso .contenido {
+            background: white;
+            width: 95%; max-width: 500px;
+            border-radius: 20px;
+            padding: 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .prog-titulo {
+            font-size: 1.4rem;
+            font-weight: 900;
             color: #333;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        .prog-nivel-grupo {
+            background: #f8f8f8;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 2px solid #eee;
+        }
+        .prog-nivel-header {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            padding: 8px 14px;
+            font-size: 1rem;
+            text-align: left;
+        }
+        .prog-fase-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            padding: 8px 14px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.85rem;
+            align-items: center;
+        }
+        .prog-fase-row:last-child { border-bottom: none; }
+        .prog-fase-row .label { font-weight: bold; color: #555; }
+        .prog-fase-row .val { color: #333; text-align: center; }
+        .prog-fase-row .val.record { color: var(--primary); font-weight: bold; }
+        .prog-fase-bloq { padding: 8px 14px; color: #bbb; font-style: italic; font-size: 0.85rem; }
+        .prog-header-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            padding: 5px 14px;
+            font-size: 0.75rem;
+            color: #999;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .prog-header-cols span { text-align: center; }
+        .prog-header-cols span:first-child { text-align: left; }
+
+        /* --- POPUP SELECTOR DE FASE --- */
+        #modal-fase {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none; justify-content: center; align-items: center;
+            z-index: 800;
+        }
+        #modal-fase .contenido {
+            background: white;
+            width: 90%; max-width: 360px;
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        #modal-fase h3 {
+            margin: 0 0 18px 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .btn-fase-opcion {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: #f0f0f0;
+            color: #555;
+            transition: 0.2s;
+        }
+        .btn-fase-opcion.activa { background: var(--primary); color: white; }
+        .btn-fase-opcion.bloqueada { background: #f0f0f0; color: #bbb; cursor: not-allowed; }
+        .btn-fase-opcion .badge-record {
+            font-size: 0.75rem;
+            font-weight: normal;
+            display: block;
+            margin-top: 3px;
+            opacity: 0.8;
+        }
+        .btn-cancelar-fase {
+            margin-top: 10px;
+            background: #eee;
+            color: #888;
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.95rem;
+            cursor: pointer;
         }
 
-        /* --- ESTILOS DE LA INTERFAZ --- */
+        /* --- ESTILO DEL CARRUSEL --- */
+        .selector-container {
+            position: relative; width: 100%;
+            display: flex; align-items: center; justify-content: center; margin: 10px 0;
+        }
+        .carrusel-visor {
+            width: 140px; height: 140px; overflow: hidden;
+            border-radius: 50%; border: 5px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: white;
+        }
+        .carrusel-visor img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .flecha-btn {
+            background: var(--primary); color: white; border: none;
+            width: 35px; height: 35px; border-radius: 50%; font-size: 18px;
+            cursor: pointer; margin: 0 10px; display: flex;
+            align-items: center; justify-content: center; transition: 0.2s;
+        }
+        #nombre-heroe { font-weight: bold; color: #333; margin-bottom: 10px; font-size: 1.1rem; }
+
+        /* --- INTERFAZ PRINCIPAL --- */
         #mensaje-bienvenida {
-            font-size: 2.5rem;
-            color: white;
+            font-size: 2.5rem; color: white;
             text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
-            margin: 0 0 10px 0;
-            text-align: center;
-            font-weight: 900;
+            margin: 0 0 10px 0; text-align: center; font-weight: 900;
             animation: floating 3s ease-in-out infinite;
         }
-
         @keyframes floating {
             0%, 100% { transform: translateY(0) rotate(-1deg); }
             50% { transform: translateY(-10px) rotate(1deg); }
         }
-
         .main-menu {
             background: white; width: 90%; max-width: 480px; padding: 20px;
             border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             text-align: center; position: relative; z-index: 10;
         }
-
         .grid-niveles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-
         button {
             padding: 10px; border: 2px solid transparent;
             border-radius: 12px; font-size: 15px; font-weight: bold;
             cursor: pointer; transition: 0.2s; background: #f0f0f0; color: #555;
         }
-
         .btn-level.activo { background: var(--primary); color: white; }
         .btn-skull { background: #455a64; color: #ffeb3b; }
         .btn-skull.activo { background: #000; color: #ffeb3b; border: 2px solid #ffeb3b; }
@@ -114,12 +213,10 @@
             background: rgba(0,0,0,0.8); display: none; 
             justify-content: center; align-items: center; z-index: 1000;
         }
-
         .modal-content {
             background: white; width: 95%; max-width: 550px; padding: 25px;
             border-radius: 20px; text-align: center; position: relative;
         }
-
         .shake { animation: shake 0.4s; border: 3px solid var(--error); }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -127,19 +224,16 @@
             50% { transform: translateX(10px); }
             75% { transform: translateX(-10px); }
         }
-
         #timer-display {
             font-size: 22px; font-weight: bold; color: #444;
             background: #f8f8f8; padding: 5px 20px; border-radius: 30px;
             display: inline-block; border: 1px solid #eee; margin-bottom: 15px;
         }
-
         .pista-progreso {
             width: 100%; height: 140px; background: #f1f1f1;
             border-radius: 15px; position: relative; margin: 15px 0;
             border-bottom: 5px solid #ccc; overflow: visible;
         }
-
         .personaje-movil {
             position: absolute; bottom: 10px; left: 0%; 
             width: 100px; height: 100px; background: white;
@@ -148,54 +242,30 @@
             overflow: hidden; display: flex; justify-content: center; align-items: center;
             transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         .personaje-movil img { width: 100%; height: 100%; object-fit: cover; }
-
         .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
         .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.4s; }
-
         #pregunta-txt { font-size: 50px; font-weight: bold; color: #222; margin: 15px 0; }
         #input-resp { 
             width: 130px; padding: 8px; font-size: 32px; text-align: center; 
             border: 2px solid #ddd; border-radius: 10px; outline: none; background: #fffde7;
         }
-
         .numpad-container {
             display: none; grid-template-columns: repeat(3, 1fr);
             gap: 10px; max-width: 280px; margin: 20px auto 0;
         }
-
         .btn-numpad {
             background: #eee; border: none; padding: 15px;
             font-size: 20px; font-weight: bold; border-radius: 10px; color: #333;
         }
-
-        .btn-doble-altura {
-            grid-row: span 2;
-            height: 100%;
-        }
-
-        .btn-x-debajo {
-            grid-column: 2;
-        }
-
+        .btn-doble-altura { grid-row: span 2; height: 100%; }
+        .btn-x-debajo { grid-column: 2; }
         #observaciones-area {
-            background: #f9f9f9;
-            border-left: 5px solid var(--secondary);
-            padding: 10px;
-            margin: 10px 0;
-            font-style: italic;
-            color: #444;
-            text-align: center;
-            border-radius: 5px;
+            background: #f9f9f9; border-left: 5px solid var(--secondary);
+            padding: 10px; margin: 10px 0; font-style: italic;
+            color: #444; text-align: center; border-radius: 5px;
         }
-
-        #tiempo-logrado {
-            font-weight: bold;
-            color: var(--primary);
-            margin: 5px 0;
-            font-size: 1.1rem;
-        }
+        #tiempo-logrado { font-weight: bold; color: var(--primary); margin: 5px 0; font-size: 1.1rem; }
 
         @media (max-width: 600px) {
             #mensaje-bienvenida { font-size: 2rem; }
@@ -211,6 +281,9 @@
     </style>
 </head>
 <body>
+
+<!-- BOTÓN DE PROGRESO FIJO -->
+<button id="btn-progreso" onclick="abrirModalProgreso()" title="Ver mi progreso">📊</button>
 
 <h1 id="mensaje-bienvenida">HOLA...</h1>
 
@@ -229,12 +302,12 @@
 
     <p>Selecciona tu Nivel</p>
     <div class="grid-niveles">
-        <button id="n1" class="btn-level activo" onclick="seleccionarFase(1, false)">Nivel 1</button>
-        <button id="n1k" class="btn-level btn-skull" onclick="seleccionarFase(1, true)">Nivel 1 💀</button>
-        <button id="n2" class="btn-level" onclick="seleccionarFase(2, false)">Nivel 2</button>
-        <button id="n2k" class="btn-level btn-skull" onclick="seleccionarFase(2, true)">Nivel 2 💀</button>
-        <button id="n3" class="btn-level" onclick="seleccionarFase(3, false)">Nivel 3</button>
-        <button id="n3k" class="btn-level btn-skull" onclick="seleccionarFase(3, true)">Nivel 3 💀</button>
+        <button id="n1" class="btn-level activo" onclick="abrirSelectorFase(1, false)">Nivel 1</button>
+        <button id="n1k" class="btn-level btn-skull" onclick="abrirSelectorFase(1, true)">Nivel 1 💀</button>
+        <button id="n2" class="btn-level" onclick="abrirSelectorFase(2, false)">Nivel 2</button>
+        <button id="n2k" class="btn-level btn-skull" onclick="abrirSelectorFase(2, true)">Nivel 2 💀</button>
+        <button id="n3" class="btn-level" onclick="abrirSelectorFase(3, false)">Nivel 3</button>
+        <button id="n3k" class="btn-level btn-skull" onclick="abrirSelectorFase(3, true)">Nivel 3 💀</button>
     </div>
 
     <h3>Operación</h3>
@@ -249,22 +322,20 @@
     </div>
 </div>
 
+<!-- MODAL JUEGO -->
 <div id="modal" class="modal-overlay">
     <div class="modal-content" id="main-modal-content">
         <span class="close-btn" onclick="cerrarJuego()">&times;</span>
         <div id="game-area">
             <div id="timer-display">00:00</div>
-            
             <div class="pista-progreso">
                 <div id="contenedor-hero" class="personaje-movil">
                     <img id="status-img" src="IMAGENES/deku.jpeg">
                 </div>
             </div>
-
             <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
             <div id="pregunta-txt">---</div>
             <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
-
             <div class="numpad-container">
                 <button class="btn-numpad" onclick="agregarNumero(1)">1</button>
                 <button class="btn-numpad" onclick="agregarNumero(2)">2</button>
@@ -275,17 +346,13 @@
                 <button class="btn-numpad" onclick="agregarNumero(7)">7</button>
                 <button class="btn-numpad" onclick="agregarNumero(8)">8</button>
                 <button class="btn-numpad" onclick="agregarNumero(9)">9</button>
-                
                 <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">LISTO</button>
                 <button class="btn-numpad" onclick="agregarNumero(0)">0</button>
                 <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">LISTO</button>
-                
                 <button class="btn-numpad btn-x-debajo" style="background:var(--error); color:white" onclick="limpiarTodo()">X</button>
             </div>
-            
             <div id="mensaje-modal" style="height: 25px; margin-top: 15px; font-weight: bold;"></div>
         </div>
-
         <div id="report-area" style="display:none">
             <h2 id="report-title">Reporte</h2>
             <div id="tiempo-logrado"></div>
@@ -296,12 +363,33 @@
                     <tbody id="report-body"></tbody>
                 </table>
             </div>
-            <button onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white; border:none; padding:15px; border-radius:10px">Volver</button>
+            <button id="btn-volver-reporte" onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:bold; border-radius:10px">Volver</button>
         </div>
     </div>
 </div>
 
+<!-- MODAL SELECTOR DE FASE -->
+<div id="modal-fase" onclick="cerrarSelectorFase(event)">
+    <div class="contenido">
+        <h3 id="titulo-selector-fase">Elige una fase</h3>
+        <div id="opciones-fase"></div>
+        <button class="btn-cancelar-fase" onclick="document.getElementById('modal-fase').style.display='none'">Cancelar</button>
+    </div>
+</div>
+
+<!-- MODAL PROGRESO -->
+<div id="modal-progreso" onclick="cerrarModalProgreso(event)">
+    <div class="contenido">
+        <span class="close-btn" onclick="document.getElementById('modal-progreso').style.display='none'">&times;</span>
+        <div class="prog-titulo">📊 Mi Progreso</div>
+        <div id="progreso-contenido"></div>
+    </div>
+</div>
+
 <script>
+// =====================================================
+// PERSONAJES
+// =====================================================
 const misPersonajes = [
     { n: 'Messi', img: 'IMAGENES/Messi.jpeg' },
     { n: 'CR7', img: 'IMAGENES/CR7.jpeg' },
@@ -314,31 +402,104 @@ const misPersonajes = [
     { n: 'Masha', img: 'IMAGENESNIÑAS/Masha.png' },
     { n: 'Moana', img: 'IMAGENESNIÑAS/moana.png' }
 ];
-
-let indexHeroe = 5; 
+let indexHeroe = 5;
 let personajeElegido = misPersonajes[indexHeroe].img;
 
-let progresoFases = { 1: 0, 2: 0, 3: 0 }; 
+// =====================================================
+// CONFIGURACIÓN DE FASES
+// =====================================================
 const configFases = [
-    { suffix: '',   time: 60 },
-    { suffix: '.A', time: 45 },
-    { suffix: '.B', time: 30 },
-    { suffix: '.C', time: 21 }
+    { suffix: '',   time: 60,  label: 'Base' },
+    { suffix: '.A', time: 45,  label: 'Fase A' },
+    { suffix: '.B', time: 30,  label: 'Fase B' },
+    { suffix: '.C', time: 21,  label: 'Fase C' }
 ];
 
 // =====================================================
-// 🔒 CONTROL DEL BOTÓN "ATRÁS" DEL CELULAR
+// PROGRESO GUARDADO EN LOCALSTORAGE (POR JUGADOR)
 // =====================================================
-window.addEventListener('popstate', function(event) {
-    // Si el modal está abierto, cerrarlo
-    const modal = document.getElementById('modal');
-    if (modal.style.display === 'flex') {
-        cerrarJuego();
+// Cada jugador tiene su propia clave: matekids_progreso_NOMBRE
+function claveJugador() {
+    const nombre = (localStorage.getItem('jugadorActual') || 'anonimo').toLowerCase().trim();
+    return 'matekids_progreso_' + nombre;
+}
+function cargarProgreso() {
+    try {
+        return JSON.parse(localStorage.getItem(claveJugador()) || '{}');
+    } catch(e) { return {}; }
+}
+function guardarProgreso(data) {
+    localStorage.setItem(claveJugador(), JSON.stringify(data));
+}
+function claveProgreso(nivel, faseIndex, skull) {
+    return (skull ? 'skull' : 'n') + nivel + '_f' + faseIndex;
+}
+
+// Fase desbloqueada más alta por nivel (para saber hasta dónde llegó)
+function fasesDesbloqueadas(nivel, skull) {
+    const prog = cargarProgreso();
+    let max = 0;
+    for (let i = 1; i <= 3; i++) {
+        const k = claveProgreso(nivel, i, skull);
+        if (prog[k] && prog[k].desbloqueado) max = i;
+        else break;
     }
-    // Siempre empujamos de vuelta para NO salir de esta página
+    return max; // 0 = solo base, 1 = A desbloqueada, etc.
+}
+
+// Registrar resultado de una partida
+function registrarPartida(nivel, faseIndex, tiempoUsado, aciertos, fallos, completo) {
+    const prog = cargarProgreso();
+    const k = claveProgreso(nivel, faseIndex, esModoSkull);
+    if (!prog[k]) prog[k] = { desbloqueado: true, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null };
+    prog[k].partidas++;
+    prog[k].aciertos += aciertos;
+    prog[k].fallos += fallos;
+    // Mejor tiempo solo si completó
+    if (completo) {
+        if (prog[k].mejorTiempo === null || tiempoUsado < prog[k].mejorTiempo) {
+            prog[k].mejorTiempo = tiempoUsado;
+        }
+        // Desbloquear siguiente fase si existe
+        if (faseIndex < 3) {
+            const kSig = claveProgreso(nivel, faseIndex + 1, esModoSkull);
+            if (!prog[kSig]) prog[kSig] = { desbloqueado: true, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null };
+            else prog[kSig].desbloqueado = true;
+        }
+    }
+    guardarProgreso(prog);
+}
+
+// =====================================================
+// CONTROL DEL BOTÓN ATRÁS
+// =====================================================
+window.addEventListener('popstate', function() {
+    const modal = document.getElementById('modal');
+    const mFase = document.getElementById('modal-fase');
+    const mProg = document.getElementById('modal-progreso');
+    if (modal.style.display === 'flex') cerrarJuego();
+    else if (mFase.style.display === 'flex') mFase.style.display = 'none';
+    else if (mProg.style.display === 'flex') mProg.style.display = 'none';
     history.pushState(null, '', window.location.href);
 });
+
 // =====================================================
+// INICIO
+// =====================================================
+window.onload = function() {
+    const nombre = localStorage.getItem('jugadorActual');
+    if (nombre) document.getElementById('mensaje-bienvenida').innerText = "¡HOLA, " + nombre.toUpperCase() + "! ✨";
+    history.pushState(null, '', window.location.href);
+    // Marcar fase base de cada nivel como desbloqueada (normal y skull)
+    const prog = cargarProgreso();
+    [1,2,3].forEach(n => {
+        [false, true].forEach(sk => {
+            const k = claveProgreso(n, 0, sk);
+            if (!prog[k]) { prog[k] = { desbloqueado: true, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null }; }
+        });
+    });
+    guardarProgreso(prog);
+};
 
 function cambiarFoto(dir) {
     indexHeroe += dir;
@@ -348,28 +509,78 @@ function cambiarFoto(dir) {
     document.getElementById('img-selector').src = p.img;
     document.getElementById('nombre-heroe').innerText = p.n.toUpperCase();
     personajeElegido = p.img;
-    document.getElementById('status-img').src = p.img; 
+    document.getElementById('status-img').src = p.img;
 }
 
-window.onload = function() {
-    const nombre = localStorage.getItem('jugadorActual');
-    if (nombre) document.getElementById('mensaje-bienvenida').innerText = "¡HOLA, " + nombre.toUpperCase() + "! ✨";
-    // Empujamos el estado inicial para que el botón atrás no salga de esta página
-    history.pushState(null, '', window.location.href);
-};
+// =====================================================
+// SELECTOR DE FASE (POPUP)
+// =====================================================
+let nivelActual = 1, esModoSkull = false, faseActual = 0;
 
-let nivelActual = 1, metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
+function abrirSelectorFase(n, skull) {
+    nivelActual = n;
+    esModoSkull = skull;
+
+    document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
+    document.getElementById(skull ? `n${n}k` : `n${n}`).classList.add('activo');
+    document.getElementById('ops-normal').style.display = skull ? 'none' : 'block';
+    document.getElementById('ops-skull').style.display  = skull ? 'block' : 'none';
+
+    const prog = cargarProgreso();
+    const desbMax = fasesDesbloqueadas(n, skull); // cuántas fases extra desbloqueadas
+
+    // Si solo tiene la base (desbMax=0), ir directo sin popup
+    if (desbMax === 0) {
+        faseActual = 0;
+        return; // solo seleccionan y esperan a elegir operación
+    }
+
+    // Mostrar popup con opciones
+    document.getElementById('titulo-selector-fase').innerText = `Nivel ${n} — Elige tu fase`;
+    const cont = document.getElementById('opciones-fase');
+    cont.innerHTML = '';
+
+    configFases.forEach((cf, i) => {
+        if (i > desbMax) return; // no mostrar fases no desbloqueadas
+        const k = claveProgreso(n, i, skull);
+        const datos = prog[k];
+        const btn = document.createElement('button');
+        btn.className = 'btn-fase-opcion' + (i === faseActual ? ' activa' : '');
+        let recordTxt = datos && datos.mejorTiempo !== null
+            ? `⏱️ Récord: ${datos.mejorTiempo}s | 🎮 Partidas: ${datos.partidas}`
+            : `🎮 Partidas: ${datos ? datos.partidas : 0}`;
+        btn.innerHTML = `Nivel ${n}${cf.suffix} — ${cf.time}s<span class="badge-record">${recordTxt}</span>`;
+        btn.onclick = () => {
+            faseActual = i;
+            document.getElementById('modal-fase').style.display = 'none';
+        };
+        cont.appendChild(btn);
+    });
+
+    document.getElementById('modal-fase').style.display = 'flex';
+    history.pushState(null, '', window.location.href);
+}
+
+function cerrarSelectorFase(e) {
+    if (e.target === document.getElementById('modal-fase')) {
+        document.getElementById('modal-fase').style.display = 'none';
+    }
+}
+
+// =====================================================
+// JUEGO
+// =====================================================
+let metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
 let operacionElegida = "", n1, n2, resultadoCorrecto, intervaloSegundos, historialPreguntas = [];
-let respuestasUsadas = new Set(); 
-let esModoSkull = false;
+let respuestasUsadas = new Set();
 
 const sonidos = {
-    cero: new Audio('SNDbien.mp3/Cero.mp3'),
-    falla: new Audio('SNDbien.mp3/falla.mp3'),
-    audioError: new Audio('SNDbien.mp3/Audio.mp3'),
-    acierto1: new Audio('SNDbien.mp3/meeee.mp3'),
-    acierto2: new Audio('SNDbien.mp3/Progreso.mp3'),
-    final: new Audio('SNDbien.mp3/Terminado.mp3')
+    cero:      new Audio('SNDbien.mp3/Cero.mp3'),
+    falla:     new Audio('SNDbien.mp3/falla.mp3'),
+    audioError:new Audio('SNDbien.mp3/Audio.mp3'),
+    acierto1:  new Audio('SNDbien.mp3/meeee.mp3'),
+    acierto2:  new Audio('SNDbien.mp3/Progreso.mp3'),
+    final:     new Audio('SNDbien.mp3/Terminado.mp3')
 };
 
 function detenerAudios() { Object.values(sonidos).forEach(s => { s.pause(); s.currentTime = 0; }); }
@@ -377,67 +588,52 @@ function agregarNumero(n) { document.getElementById('input-resp').value += n; }
 function limpiarTodo() { document.getElementById('input-resp').value = ""; }
 function enviarRespuesta() { validarLogica(); }
 
-function seleccionarFase(n, skull) {
-    nivelActual = n;
-    esModoSkull = skull;
-
-    document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
-    document.getElementById(skull ? `n${n}k` : `n${n}`).classList.add('activo');
-    document.getElementById('ops-normal').style.display = skull ? 'none' : 'block';
-    document.getElementById('ops-skull').style.display = skull ? 'block' : 'none';
-}
-
 function abrirJuego(op) {
     operacionElegida = op;
     progresoActual = 0;
     historialPreguntas = [];
     respuestasUsadas.clear();
 
-    let faseIndex = progresoFases[nivelActual];
-    let config = configFases[faseIndex];
+    const config = configFases[faseActual];
     tiempoInicial = config.time;
     tiempoRestante = tiempoInicial;
     metaPreguntas = nivelActual * 10;
 
-    document.getElementById('status-img').src = personajeElegido; 
+    document.getElementById('status-img').src = personajeElegido;
     document.getElementById('game-area').style.display = 'block';
     document.getElementById('report-area').style.display = 'none';
     document.getElementById('modal').style.display = 'flex';
-
-    // Empujamos estado para que el botón atrás cierre el modal primero
     history.pushState(null, '', window.location.href);
-
     actualizarProgreso();
     nuevaPregunta();
     iniciarCronometro();
 }
 
 function generarLogicaPregunta() {
-    let intentosLoop = 0;
-    let v;
+    let intentosLoop = 0, v;
     while (intentosLoop < 100) {
         let op = operacionElegida === '?' ? ['+','-','*','/'][Math.floor(Math.random()*4)] : operacionElegida;
         let t1, t2, res;
-        if(nivelActual === 1) {
-            if(op === '/') { res = Math.floor(Math.random()*8)+2; t2 = Math.floor(Math.random()*4)+2; t1 = res*t2; }
-            else if(op === '*') { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*9)+1; res = t1*t2; }
-            else if(op === '-') { t1 = Math.floor(Math.random()*12)+1; t2 = Math.floor(Math.random()*t1)+1; res = t1-t2; }
-            else { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*9)+1; res = t1+t2; }
-        } else if(nivelActual === 2) {
-            if(op === '/') { res = Math.floor(Math.random()*20)+5; t2 = Math.floor(Math.random()*7)+2; t1 = res*t2; }
-            else if(op === '*') { t1 = Math.floor(Math.random()*12)+2; t2 = Math.floor(Math.random()*11)+2; res = t1*t2; }
-            else if(op === '-') { t1 = Math.floor(Math.random()*40)+10; t2 = Math.floor(Math.random()*30)+5; res = t1-t2; }
-            else { t1 = Math.floor(Math.random()*40)+10; t2 = Math.floor(Math.random()*40)+10; res = t1+t2; }
+        if (nivelActual === 1) {
+            if(op==='/'){res=Math.floor(Math.random()*8)+2;t2=Math.floor(Math.random()*4)+2;t1=res*t2;}
+            else if(op==='*'){t1=Math.floor(Math.random()*9)+1;t2=Math.floor(Math.random()*9)+1;res=t1*t2;}
+            else if(op==='-'){t1=Math.floor(Math.random()*12)+1;t2=Math.floor(Math.random()*t1)+1;res=t1-t2;}
+            else{t1=Math.floor(Math.random()*9)+1;t2=Math.floor(Math.random()*9)+1;res=t1+t2;}
+        } else if (nivelActual === 2) {
+            if(op==='/'){res=Math.floor(Math.random()*20)+5;t2=Math.floor(Math.random()*7)+2;t1=res*t2;}
+            else if(op==='*'){t1=Math.floor(Math.random()*12)+2;t2=Math.floor(Math.random()*11)+2;res=t1*t2;}
+            else if(op==='-'){t1=Math.floor(Math.random()*40)+10;t2=Math.floor(Math.random()*30)+5;res=t1-t2;}
+            else{t1=Math.floor(Math.random()*40)+10;t2=Math.floor(Math.random()*40)+10;res=t1+t2;}
         } else {
-            if(op === '/') { res = Math.floor(Math.random()*50)+10; t2 = Math.floor(Math.random()*12)+2; t1 = res*t2; }
-            else if(op === '*') { t1 = Math.floor(Math.random()*25)+5; t2 = Math.floor(Math.random()*15)+2; res = t1*t2; }
-            else if(op === '-') { t1 = Math.floor(Math.random()*90)+50; t2 = Math.floor(Math.random()*40)+10; res = t1-t2; }
-            else { t1 = Math.floor(Math.random()*80)+20; t2 = Math.floor(Math.random()*80)+20; res = t1+t2; }
+            if(op==='/'){res=Math.floor(Math.random()*50)+10;t2=Math.floor(Math.random()*12)+2;t1=res*t2;}
+            else if(op==='*'){t1=Math.floor(Math.random()*25)+5;t2=Math.floor(Math.random()*15)+2;res=t1*t2;}
+            else if(op==='-'){t1=Math.floor(Math.random()*90)+50;t2=Math.floor(Math.random()*40)+10;res=t1-t2;}
+            else{t1=Math.floor(Math.random()*80)+20;t2=Math.floor(Math.random()*80)+20;res=t1+t2;}
         }
         if (!respuestasUsadas.has(res)) { v = { t1, t2, res, op }; break; }
         intentosLoop++;
     }
-    if(!v) v = { t1: 5, t2: 5, res: 10, op: '+' };
+    if (!v) v = { t1:5, t2:5, res:10, op:'+' };
     return v;
 }
 
@@ -447,19 +643,19 @@ function nuevaPregunta() {
     document.getElementById('pregunta-txt').innerText = `${n1} ${v.op==='*'?'×':v.op==='/'?'÷':v.op} ${n2}`;
     document.getElementById('input-resp').value = "";
     mostrarMensaje("", "");
-    if(window.innerWidth > 600) document.getElementById('input-resp').focus();
+    if (window.innerWidth > 600) document.getElementById('input-resp').focus();
 }
 
 function validarLogica() {
     let input = document.getElementById('input-resp');
-    let r = Number(input.value); if(input.value === "") return;
+    let r = Number(input.value); if (input.value === "") return;
     let esBien = (r === resultadoCorrecto);
     historialPreguntas.push({ txt: document.getElementById('pregunta-txt').innerText, u: r, c: resultadoCorrecto, ok: esBien });
 
-    if(esBien) {
-        respuestasUsadas.add(resultadoCorrecto); 
+    if (esBien) {
+        respuestasUsadas.add(resultadoCorrecto);
         progresoActual++;
-        if(progresoActual >= metaPreguntas) {
+        if (progresoActual >= metaPreguntas) {
             detenerAudios(); sonidos.final.play();
             mostrarReporte("🏆 ¡EXCELENTE!");
         } else {
@@ -485,7 +681,7 @@ document.getElementById('input-resp').addEventListener('keydown', e => { if(e.ke
 function actualizarProgreso() {
     let p = (progresoActual / metaPreguntas) * 100;
     document.getElementById('bar').style.width = p + "%";
-    document.getElementById('contenedor-hero').style.left = (p * 0.75) + "%"; 
+    document.getElementById('contenedor-hero').style.left = (p * 0.75) + "%";
 }
 
 function iniciarCronometro() {
@@ -494,7 +690,7 @@ function iniciarCronometro() {
         tiempoRestante--;
         let m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
         document.getElementById('timer-display').innerText = `${m}:${s<10?'0'+s:s}`;
-        if(tiempoRestante <= 0) { clearInterval(intervaloSegundos); mostrarReporte("⏰ TIEMPO AGOTADO"); }
+        if (tiempoRestante <= 0) { clearInterval(intervaloSegundos); mostrarReporte("⏰ TIEMPO AGOTADO"); }
     }, 1000);
 }
 
@@ -502,41 +698,153 @@ function mostrarReporte(t) {
     clearInterval(intervaloSegundos);
     const nombre = (localStorage.getItem('jugadorActual') || "HEROE").toUpperCase();
     let tiempoUsado = tiempoInicial - tiempoRestante;
+    let aciertos = historialPreguntas.filter(p => p.ok).length;
+    let fallos    = historialPreguntas.length - aciertos;
+    let completo  = (t !== "⏰ TIEMPO AGOTADO" && progresoActual >= metaPreguntas);
 
-    let faseAntes = progresoFases[nivelActual];
-    
+    // Guardar en localStorage
+    registrarPartida(nivelActual, faseActual, tiempoUsado, aciertos, fallos, completo);
+
     document.getElementById('game-area').style.display = 'none';
     document.getElementById('report-area').style.display = 'block';
-    
-    let aciertos = historialPreguntas.filter(p => p.ok).length;
-    let fallos = historialPreguntas.length - aciertos;
-    let obsTxt = "";
 
     let desbloqueoMsg = "";
-    if (t !== "⏰ TIEMPO AGOTADO" && progresoActual >= metaPreguntas) {
-        if (progresoFases[nivelActual] < 3) {
-            progresoFases[nivelActual]++;
-            let nuevaFase = configFases[progresoFases[nivelActual]];
-            desbloqueoMsg = `<br><span style="color:var(--primary)">🔓 ¡NUEVA FASE DESBLOQUEADA: NIVEL ${nivelActual}${nuevaFase.suffix} — ${nuevaFase.time}s!</span>`;
-            
-            let btnID = (esModoSkull ? `n${nivelActual}k` : `n${nivelActual}`);
-            document.getElementById(btnID).innerText = `Nivel ${nivelActual}${nuevaFase.suffix}${esModoSkull?' 💀':''}`;
-        }
+    let hayFaseSiguiente = completo && faseActual < 3;
+    if (hayFaseSiguiente) {
+        const nuevaFase = configFases[faseActual + 1];
+        desbloqueoMsg = `<br><span style="color:var(--primary)">🔓 ¡NUEVA FASE DESBLOQUEADA: NIVEL ${nivelActual}${nuevaFase.suffix} — ${nuevaFase.time}s!</span>`;
     }
 
-    document.getElementById('report-title').innerHTML = nombre + ", REPORTE DE NIVEL " + nivelActual + configFases[faseAntes].suffix;
-    document.getElementById('tiempo-logrado').innerHTML = `⏱️ Tiempo: ${tiempoUsado} segundos de ${tiempoInicial}s ${desbloqueoMsg}`;
-    
-    if(fallos === 0) obsTxt = "✨ ¡EXCELENTE! Eres un genio.";
-    else if(aciertos > fallos) obsTxt = "👍 ¡BIEN! Sigue mejorando.";
+    const cf = configFases[faseActual];
+    document.getElementById('report-title').innerHTML = `${nombre}, NIVEL ${nivelActual}${cf.suffix}`;
+    document.getElementById('tiempo-logrado').innerHTML = `⏱️ Tiempo: ${tiempoUsado}s de ${tiempoInicial}s | ✅ ${aciertos} | ❌ ${fallos} ${desbloqueoMsg}`;
+
+    let obsTxt = "";
+    if (fallos === 0) obsTxt = "✨ ¡EXCELENTE! Eres un genio.";
+    else if (aciertos > fallos) obsTxt = "👍 ¡BIEN! Sigue mejorando.";
     else obsTxt = "💪 ¡TÚ PUEDES! No te rindas.";
 
     document.getElementById('observaciones-area').innerText = obsTxt;
-    document.getElementById('report-body').innerHTML = historialPreguntas.map(i => `<tr><td>${i.txt}</td><td style="color:${i.ok?'green':'red'}">${i.u}</td><td>${i.c}</td></tr>`).join('');
+    document.getElementById('report-body').innerHTML = historialPreguntas.map(i =>
+        `<tr><td>${i.txt}</td><td style="color:${i.ok?'green':'red'}">${i.u}</td><td>${i.c}</td></tr>`
+    ).join('');
+
+    // Botón: si completó y hay fase siguiente → "Continuar", si no → "Volver"
+    const btnVolver = document.getElementById('btn-volver-reporte');
+    if (hayFaseSiguiente) {
+        const sigFase = configFases[faseActual + 1];
+        btnVolver.innerText = `▶ Continuar a Nivel ${nivelActual}${sigFase.suffix}`;
+        btnVolver.style.background = 'var(--secondary)';
+        btnVolver.onclick = () => continuarSiguienteFase();
+    } else {
+        btnVolver.innerText = 'Volver';
+        btnVolver.style.background = 'var(--primary)';
+        btnVolver.onclick = () => cerrarJuego();
+    }
 }
 
-function cerrarJuego() { clearInterval(intervaloSegundos); detenerAudios(); document.getElementById('modal').style.display = 'none'; }
-function mostrarMensaje(t, c) { let m = document.getElementById('mensaje-modal'); m.innerText = t; m.style.color = c; }
+function continuarSiguienteFase() {
+    // Avanzar a la siguiente fase con la misma operación
+    faseActual++;
+    progresoActual = 0;
+    historialPreguntas = [];
+    respuestasUsadas.clear();
+
+    const config = configFases[faseActual];
+    tiempoInicial = config.time;
+    tiempoRestante = tiempoInicial;
+    metaPreguntas = nivelActual * 10;
+
+    document.getElementById('game-area').style.display = 'block';
+    document.getElementById('report-area').style.display = 'none';
+    document.getElementById('bar').style.width = '0%';
+    document.getElementById('contenedor-hero').style.left = '0%';
+
+    actualizarProgreso();
+    nuevaPregunta();
+    iniciarCronometro();
+}
+
+function cerrarJuego() {
+    clearInterval(intervaloSegundos); detenerAudios();
+    document.getElementById('modal').style.display = 'none';
+}
+
+function mostrarMensaje(t, c) {
+    let m = document.getElementById('mensaje-modal'); m.innerText = t; m.style.color = c;
+}
+
+// =====================================================
+// PANEL DE PROGRESO
+// =====================================================
+function crearGrupoNivel(prog, nivel, skull) {
+    const grupo = document.createElement('div');
+    grupo.className = 'prog-nivel-grupo';
+    const icono = skull ? '💀' : '⭐';
+    const estilo = skull ? 'background:#222; color:#ffeb3b;' : '';
+    grupo.innerHTML = `<div class="prog-nivel-header" style="${estilo}">${icono} Nivel ${nivel}${skull ? ' 💀' : ''}</div>`;
+
+    const header = document.createElement('div');
+    header.className = 'prog-header-cols';
+    header.innerHTML = `<span>Fase</span><span>Partidas</span><span>Aciertos/Fallos</span><span>Récord</span>`;
+    grupo.appendChild(header);
+
+    configFases.forEach((cf, i) => {
+        const k = claveProgreso(nivel, i, skull);
+        const datos = prog[k];
+        const row = document.createElement('div');
+        row.className = 'prog-fase-row';
+        if (!datos || !datos.desbloqueado) {
+            row.innerHTML = `<span class="label" style="color:#bbb">Nivel ${nivel}${cf.suffix}</span><span class="val" style="color:#ddd">🔒 Bloqueada</span><span></span><span></span>`;
+        } else {
+            const record = datos.mejorTiempo !== null ? `${datos.mejorTiempo}s` : '—';
+            const acFal  = `${datos.aciertos}✅ / ${datos.fallos}❌`;
+            row.innerHTML = `
+                <span class="label">Nivel ${nivel}${cf.suffix}</span>
+                <span class="val">${datos.partidas}</span>
+                <span class="val">${acFal}</span>
+                <span class="val record">${record}</span>
+            `;
+        }
+        grupo.appendChild(row);
+    });
+    return grupo;
+}
+
+function abrirModalProgreso() {
+    const prog = cargarProgreso();
+    const cont = document.getElementById('progreso-contenido');
+    cont.innerHTML = '';
+
+    // Título sección normal
+    const tituloNormal = document.createElement('div');
+    tituloNormal.style = 'font-weight:bold; color:#555; margin:10px 0 5px; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;';
+    tituloNormal.innerText = '⭐ Modo Normal';
+    cont.appendChild(tituloNormal);
+
+    [1, 2, 3].forEach(nivel => {
+        cont.appendChild(crearGrupoNivel(prog, nivel, false));
+    });
+
+    // Separador skull
+    const tituloSkull = document.createElement('div');
+    tituloSkull.style = 'font-weight:bold; color:#ffeb3b; background:#222; padding:6px 10px; border-radius:8px; margin:15px 0 5px; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;';
+    tituloSkull.innerText = '💀 Modo Calavera';
+    cont.appendChild(tituloSkull);
+
+    [1, 2, 3].forEach(nivel => {
+        cont.appendChild(crearGrupoNivel(prog, nivel, true));
+    });
+
+    document.getElementById('modal-progreso').style.display = 'flex';
+    history.pushState(null, '', window.location.href);
+}
+
+function cerrarModalProgreso(e) {
+    if (e.target === document.getElementById('modal-progreso')) {
+        document.getElementById('modal-progreso').style.display = 'none';
+    }
+}
 </script>
 </body>
 </html>

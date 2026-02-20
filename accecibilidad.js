@@ -16,7 +16,7 @@
   /* Botón de Deku */
   #accFab {
     position:fixed; 
-    bottom:20px; /* Posición por defecto en PC */
+    bottom:20px;
     left:20px; 
     width:70px; 
     height:70px; 
@@ -25,22 +25,18 @@
     border:4px solid white;
     box-shadow:0 8px 15px rgba(0,0,0,0.2); 
     z-index:100000; 
-    cursor:pointer;
+    cursor:grab;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     padding:0; 
     overflow:hidden;
-  }
-
-  /* AJUSTE PARA MÓVIL: Subimos el botón para que no tape el Numpad */
-  @media (max-width: 600px) {
-    #accFab {
-      bottom: 1px !important; 
-    }
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   #accFab:hover { transform: scale(1.1) rotate(5deg); }
-  #accFab img { width:100%; height:100%; object-fit:cover; }
+  #accFab img { width:100%; height:100%; object-fit:cover; pointer-events:none; }
   #accFab.right { right:20px; left:auto; }
+  #accFab.dragging { cursor:grabbing; transform: scale(1.15); transition: none; box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
 
   /* Panel Unificado */
   #accPanel {
@@ -94,7 +90,8 @@
     daltonic: 'none', overlayColor: 'none',
     bigCursor: false, readingGuide: false, superBtns: false,
     stopAnimations: false, voiceFeedback: false, align: 'none',
-    position: 'left'
+    position: 'left',
+    fabX: null, fabY: null  // posición guardada del botón
   };
 
   let settings = Object.assign({}, defaults, JSON.parse(localStorage.getItem(LS_KEY) || '{}'));
@@ -123,9 +120,114 @@
     if(settings.overlayColor !== 'none') { ov.style.display='block'; ov.style.backgroundColor=settings.overlayColor; }
     else { ov.style.display='none'; }
 
-    $('#accFab').classList.toggle('right', settings.position === 'right');
+    // Solo aplica left/right si no hay posición personalizada guardada
+    if (settings.fabX === null) {
+      $('#accFab').classList.toggle('right', settings.position === 'right');
+    }
+
     localStorage.setItem(LS_KEY, JSON.stringify(settings));
   }
+
+  // =====================================================
+  // 🖐️ DRAG TÁCTIL Y DE MOUSE PARA EL BOTÓN
+  // =====================================================
+  function makeDraggable(fab) {
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+    let moved = false;
+
+    // Restaurar posición guardada
+    if (settings.fabX !== null && settings.fabY !== null) {
+      fab.style.left = settings.fabX + 'px';
+      fab.style.top = settings.fabY + 'px';
+      fab.style.bottom = 'auto';
+      fab.style.right = 'auto';
+    }
+
+    function onStart(clientX, clientY) {
+      isDragging = true;
+      moved = false;
+      fab.classList.add('dragging');
+
+      const rect = fab.getBoundingClientRect();
+      startX = clientX - rect.left;
+      startY = clientY - rect.top;
+    }
+
+    function onMove(clientX, clientY) {
+      if (!isDragging) return;
+      moved = true;
+
+      let newLeft = clientX - startX;
+      let newTop = clientY - startY;
+
+      // Límites para no salirse de la pantalla
+      const maxX = window.innerWidth - fab.offsetWidth;
+      const maxY = window.innerHeight - fab.offsetHeight;
+      newLeft = Math.max(0, Math.min(newLeft, maxX));
+      newTop = Math.max(0, Math.min(newTop, maxY));
+
+      fab.style.left = newLeft + 'px';
+      fab.style.top = newTop + 'px';
+      fab.style.bottom = 'auto';
+      fab.style.right = 'auto';
+    }
+
+    function onEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      fab.classList.remove('dragging');
+
+      // Guardar posición
+      const rect = fab.getBoundingClientRect();
+      settings.fabX = rect.left;
+      settings.fabY = rect.top;
+      localStorage.setItem(LS_KEY, JSON.stringify(settings));
+    }
+
+    // --- TOUCH ---
+    fab.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      onStart(t.clientX, t.clientY);
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      onMove(t.clientX, t.clientY);
+    }, { passive: false });
+
+    document.addEventListener('touchend', (e) => {
+      if (!isDragging) return;
+      onEnd();
+      // Si no se movió, abrir el panel
+      if (!moved) {
+        $('#accPanel').classList.add('open');
+        speak("Menú abierto");
+      }
+    });
+
+    // --- MOUSE (para PC) ---
+    fab.addEventListener('mousedown', (e) => {
+      onStart(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      onMove(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      onEnd();
+      if (!moved) {
+        $('#accPanel').classList.add('open');
+        speak("Menú abierto");
+      }
+    });
+  }
+  // =====================================================
 
   function speak(text) {
     if (!settings.voiceFeedback) return;
@@ -204,8 +306,12 @@
     `;
     document.body.appendChild(panel);
 
-    // Eventos
-    fab.onclick = () => { panel.classList.add('open'); speak("Menú abierto"); };
+    // Activar drag en el botón
+    makeDraggable(fab);
+
+    // El onclick original se reemplaza por el drag (que detecta si hubo movimiento)
+    // Ya no necesitamos fab.onclick directo
+
     $('#accClose').onclick = () => panel.classList.remove('open');
 
     const upd = () => { applyAll(); sync(); };
@@ -232,7 +338,17 @@
     $('#btn-read-all').onclick = () => { speak(document.body.innerText.substring(0, 1000)); };
 
     $('#btn-pos').onclick = () => { settings.position = settings.position === 'left' ? 'right' : 'left'; upd(); };
-    $('#btn-res').onclick = () => { if(confirm("¿Reiniciar?")){ settings = Object.assign({}, defaults); upd(); } };
+    $('#btn-res').onclick = () => { 
+      if(confirm("¿Reiniciar?")){ 
+        settings = Object.assign({}, defaults); 
+        // Resetear posición visual del botón
+        fab.style.left = '20px';
+        fab.style.top = 'auto';
+        fab.style.bottom = '20px';
+        fab.style.right = 'auto';
+        upd(); 
+      } 
+    };
 
     function sync() {
       $('#btn-guide').classList.toggle('active', settings.readingGuide);
