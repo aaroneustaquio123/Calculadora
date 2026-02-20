@@ -160,7 +160,6 @@
             border: 2px solid #ddd; border-radius: 10px; outline: none; background: #fffde7;
         }
 
-        /* --- ESTILO BOTONES NUMPAD --- */
         .numpad-container {
             display: none; grid-template-columns: repeat(3, 1fr);
             gap: 10px; max-width: 280px; margin: 20px auto 0;
@@ -180,7 +179,6 @@
             grid-column: 2;
         }
 
-        /* ESTILO OBSERVACIONES */
         #observaciones-area {
             background: #f9f9f9;
             border-left: 5px solid var(--secondary);
@@ -190,6 +188,13 @@
             color: #444;
             text-align: center;
             border-radius: 5px;
+        }
+
+        #tiempo-logrado {
+            font-weight: bold;
+            color: var(--primary);
+            margin: 5px 0;
+            font-size: 1.1rem;
         }
 
         @media (max-width: 600px) {
@@ -224,12 +229,12 @@
 
     <p>Selecciona tu Nivel</p>
     <div class="grid-niveles">
-        <button id="n1" class="btn-level activo" onclick="setNivel(1, 10, 60, false)">Nivel 1</button>
-        <button id="n1k" class="btn-level btn-skull" onclick="setNivel(1, 10, 60, true)">Nivel 1 💀</button>
-        <button id="n2" class="btn-level" onclick="setNivel(2, 20, 120, false)">Nivel 2</button>
-        <button id="n2k" class="btn-level btn-skull" onclick="setNivel(2, 20, 120, true)">Nivel 2 💀</button>
-        <button id="n3" class="btn-level" onclick="setNivel(3, 30, 180, false)">Nivel 3</button>
-        <button id="n3k" class="btn-level btn-skull" onclick="setNivel(3, 30, 180, true)">Nivel 3 💀</button>
+        <button id="n1" class="btn-level activo" onclick="seleccionarFase(1, false)">Nivel 1</button>
+        <button id="n1k" class="btn-level btn-skull" onclick="seleccionarFase(1, true)">Nivel 1 💀</button>
+        <button id="n2" class="btn-level" onclick="seleccionarFase(2, false)">Nivel 2</button>
+        <button id="n2k" class="btn-level btn-skull" onclick="seleccionarFase(2, true)">Nivel 2 💀</button>
+        <button id="n3" class="btn-level" onclick="seleccionarFase(3, false)">Nivel 3</button>
+        <button id="n3k" class="btn-level btn-skull" onclick="seleccionarFase(3, true)">Nivel 3 💀</button>
     </div>
 
     <h3>Operación</h3>
@@ -283,6 +288,7 @@
 
         <div id="report-area" style="display:none">
             <h2 id="report-title">Reporte</h2>
+            <div id="tiempo-logrado"></div>
             <div id="observaciones-area"></div>
             <div style="max-height: 250px; overflow-y: auto;">
                 <table class="report-table">
@@ -312,11 +318,39 @@ const misPersonajes = [
 let indexHeroe = 5; 
 let personajeElegido = misPersonajes[indexHeroe].img;
 
+let progresoFases = { 1: 0, 2: 0, 3: 0 }; 
+const configFases = [
+    { suffix: '',   time: 60 },
+    { suffix: '.A', time: 45 },
+    { suffix: '.B', time: 30 },
+    { suffix: '.C', time: 21 }
+];
+
+// =====================================================
+// 🔒 CONTROL DEL BOTÓN "ATRÁS" DEL CELULAR
+// Usamos history.pushState para atrapar el botón atrás
+// y evitar que salga de juego.html
+// =====================================================
+window.addEventListener('load', function() {
+    // Empujamos un estado "juego" al historial
+    history.pushState({ pagina: 'juego' }, '', window.location.href);
+});
+
+window.addEventListener('popstate', function(event) {
+    // Si el modal está abierto, cerrarlo en vez de navegar atrás
+    const modal = document.getElementById('modal');
+    if (modal.style.display === 'flex') {
+        cerrarJuego();
+    }
+    // Siempre volvemos a empujar el estado para quedarnos en esta página
+    history.pushState({ pagina: 'juego' }, '', window.location.href);
+});
+// =====================================================
+
 function cambiarFoto(dir) {
     indexHeroe += dir;
     if (indexHeroe < 0) indexHeroe = misPersonajes.length - 1;
     if (indexHeroe >= misPersonajes.length) indexHeroe = 0;
-    
     const p = misPersonajes[indexHeroe];
     document.getElementById('img-selector').src = p.img;
     document.getElementById('nombre-heroe').innerText = p.n.toUpperCase();
@@ -327,11 +361,14 @@ function cambiarFoto(dir) {
 window.onload = function() {
     const nombre = localStorage.getItem('jugadorActual');
     if (nombre) document.getElementById('mensaje-bienvenida').innerText = "¡HOLA, " + nombre.toUpperCase() + "! ✨";
+    // Empujamos el estado inicial al cargar la página
+    history.pushState({ pagina: 'juego' }, '', window.location.href);
 };
 
 let nivelActual = 1, metaPreguntas = 10, tiempoInicial = 60, tiempoRestante = 60, progresoActual = 0;
 let operacionElegida = "", n1, n2, resultadoCorrecto, intervaloSegundos, historialPreguntas = [];
-let respuestasUsadas = new Set(); // REGISTRO DE RESPUESTAS YA SALIDAS
+let respuestasUsadas = new Set(); 
+let esModoSkull = false;
 
 const sonidos = {
     cero: new Audio('SNDbien.mp3/Cero.mp3'),
@@ -347,8 +384,10 @@ function agregarNumero(n) { document.getElementById('input-resp').value += n; }
 function limpiarTodo() { document.getElementById('input-resp').value = ""; }
 function enviarRespuesta() { validarLogica(); }
 
-function setNivel(n, meta, seg, skull) {
-    nivelActual = n; metaPreguntas = meta; tiempoInicial = seg;
+function seleccionarFase(n, skull) {
+    nivelActual = n;
+    esModoSkull = skull;
+
     document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
     document.getElementById(skull ? `n${n}k` : `n${n}`).classList.add('activo');
     document.getElementById('ops-normal').style.display = skull ? 'none' : 'block';
@@ -356,24 +395,36 @@ function setNivel(n, meta, seg, skull) {
 }
 
 function abrirJuego(op) {
-    operacionElegida = op; progresoActual = 0; tiempoRestante = tiempoInicial;
+    operacionElegida = op;
+    progresoActual = 0;
     historialPreguntas = [];
-    respuestasUsadas.clear(); // Limpiar el registro al iniciar juego nuevo
+    respuestasUsadas.clear();
+
+    let faseIndex = progresoFases[nivelActual];
+    let config = configFases[faseIndex];
+    tiempoInicial = config.time;
+    tiempoRestante = tiempoInicial;
+    metaPreguntas = nivelActual * 10;
+
     document.getElementById('status-img').src = personajeElegido; 
     document.getElementById('game-area').style.display = 'block';
     document.getElementById('report-area').style.display = 'none';
     document.getElementById('modal').style.display = 'flex';
-    actualizarProgreso(); nuevaPregunta(); iniciarCronometro();
+
+    // Empujamos un estado "modal-abierto" para que el botón atrás lo capture
+    history.pushState({ pagina: 'juego', modal: 'abierto' }, '', window.location.href);
+
+    actualizarProgreso();
+    nuevaPregunta();
+    iniciarCronometro();
 }
 
 function generarLogicaPregunta() {
     let intentosLoop = 0;
     let v;
-    
     while (intentosLoop < 100) {
         let op = operacionElegida === '?' ? ['+','-','*','/'][Math.floor(Math.random()*4)] : operacionElegida;
         let t1, t2, res;
-        
         if(nivelActual === 1) {
             if(op === '/') { res = Math.floor(Math.random()*8)+2; t2 = Math.floor(Math.random()*4)+2; t1 = res*t2; }
             else if(op === '*') { t1 = Math.floor(Math.random()*9)+1; t2 = Math.floor(Math.random()*9)+1; res = t1*t2; }
@@ -390,18 +441,10 @@ function generarLogicaPregunta() {
             else if(op === '-') { t1 = Math.floor(Math.random()*90)+50; t2 = Math.floor(Math.random()*40)+10; res = t1-t2; }
             else { t1 = Math.floor(Math.random()*80)+20; t2 = Math.floor(Math.random()*80)+20; res = t1+t2; }
         }
-
-        // VALIDAR QUE LA RESPUESTA (RES) SEA DIFERENTE A LAS ANTERIORES
-        if (!respuestasUsadas.has(res)) {
-            v = { t1, t2, res, op };
-            break; 
-        }
+        if (!respuestasUsadas.has(res)) { v = { t1, t2, res, op }; break; }
         intentosLoop++;
     }
-    
-    // Si el loop falla por falta de combinaciones (raro), devolvemos la última generada
-    if(!v) v = { t1: Math.floor(Math.random()*5)+1, t2: Math.floor(Math.random()*5)+1, res: 99, op: '+' };
-    
+    if(!v) v = { t1: 5, t2: 5, res: 10, op: '+' };
     return v;
 }
 
@@ -421,7 +464,7 @@ function validarLogica() {
     historialPreguntas.push({ txt: document.getElementById('pregunta-txt').innerText, u: r, c: resultadoCorrecto, ok: esBien });
 
     if(esBien) {
-        respuestasUsadas.add(resultadoCorrecto); // GUARDAR RESPUESTA PARA QUE NO SALGA OTRA VEZ
+        respuestasUsadas.add(resultadoCorrecto); 
         progresoActual++;
         if(progresoActual >= metaPreguntas) {
             detenerAudios(); sonidos.final.play();
@@ -432,33 +475,18 @@ function validarLogica() {
             setTimeout(nuevaPregunta, 400);
         }
     } else {
-        // Restamos un punto
         progresoActual = Math.max(0, progresoActual - 1);
-        
         document.getElementById('main-modal-content').classList.add('shake');
         setTimeout(() => document.getElementById('main-modal-content').classList.remove('shake'), 400);
-        
         detenerAudios();
-        
-        // --- LÓGICA DE AUDIOS INTERCALADOS Y PRIORIDAD CERO ---
-        if (progresoActual === 0) {
-            // Si el puntaje es cero, este sonido tiene la prioridad
-            sonidos.cero.play();
-        } else {
-            // Si aún tienes puntos, elige uno de los dos fallos al azar
-            if (Math.random() < 0.5) {
-                sonidos.falla.play();
-            } else {
-                new Audio('SNDbien.mp3/Audio.mp3').play();
-            }
-        }
-        // ------------------------------------------------------
-
+        if (progresoActual === 0) sonidos.cero.play();
+        else (Math.random() < 0.5 ? sonidos.falla.play() : sonidos.audioError.play());
         mostrarMensaje("❌ ¡ERROR!", "var(--error)");
         setTimeout(nuevaPregunta, 400);
     }
     actualizarProgreso();
 }
+
 document.getElementById('input-resp').addEventListener('keydown', e => { if(e.key === "Enter") validarLogica(); });
 
 function actualizarProgreso() {
@@ -480,21 +508,35 @@ function iniciarCronometro() {
 function mostrarReporte(t) {
     clearInterval(intervaloSegundos);
     const nombre = (localStorage.getItem('jugadorActual') || "HEROE").toUpperCase();
+    let tiempoUsado = tiempoInicial - tiempoRestante;
+
+    let faseAntes = progresoFases[nivelActual];
+    
     document.getElementById('game-area').style.display = 'none';
     document.getElementById('report-area').style.display = 'block';
-    document.getElementById('report-title').innerText = nombre + ", ESTE ES TU REPORTE";
     
     let aciertos = historialPreguntas.filter(p => p.ok).length;
     let fallos = historialPreguntas.length - aciertos;
     let obsTxt = "";
 
-    if(fallos === 0) {
-        obsTxt = "✨ ¡EXCELENTE " + nombre + "! Eres un genio, sigue así.";
-    } else if(aciertos > fallos) {
-        obsTxt = "👍 ¡VAMOS " + nombre + "! Sigue así mejorando, lo estás haciendo genial.";
-    } else {
-        obsTxt = "💪 " + nombre + ", tú puedes mejorar, ¡no te rindas!";
+    let desbloqueoMsg = "";
+    if (t !== "⏰ TIEMPO AGOTADO" && progresoActual >= metaPreguntas) {
+        if (progresoFases[nivelActual] < 3) {
+            progresoFases[nivelActual]++;
+            let nuevaFase = configFases[progresoFases[nivelActual]];
+            desbloqueoMsg = `<br><span style="color:var(--primary)">🔓 ¡NUEVA FASE DESBLOQUEADA: NIVEL ${nivelActual}${nuevaFase.suffix} — ${nuevaFase.time}s!</span>`;
+            
+            let btnID = (esModoSkull ? `n${nivelActual}k` : `n${nivelActual}`);
+            document.getElementById(btnID).innerText = `Nivel ${nivelActual}${nuevaFase.suffix}${esModoSkull?' 💀':''}`;
+        }
     }
+
+    document.getElementById('report-title').innerHTML = nombre + ", REPORTE DE NIVEL " + nivelActual + configFases[faseAntes].suffix;
+    document.getElementById('tiempo-logrado').innerHTML = `⏱️ Tiempo: ${tiempoUsado} segundos de ${tiempoInicial}s ${desbloqueoMsg}`;
+    
+    if(fallos === 0) obsTxt = "✨ ¡EXCELENTE! Eres un genio.";
+    else if(aciertos > fallos) obsTxt = "👍 ¡BIEN! Sigue mejorando.";
+    else obsTxt = "💪 ¡TÚ PUEDES! No te rindas.";
 
     document.getElementById('observaciones-area').innerText = obsTxt;
     document.getElementById('report-body').innerHTML = historialPreguntas.map(i => `<tr><td>${i.txt}</td><td style="color:${i.ok?'green':'red'}">${i.u}</td><td>${i.c}</td></tr>`).join('');
