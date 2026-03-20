@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    
-    <link rel="icon" type="image/png" href="IMAGENES/LOGO.jpeg">    
-    <title>MateKids PRO - ¡Desafío de Héroes!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="IMAGENES/LOGO.jpeg">
     <script src="accecibilidad.js"></script>   
+    <title>MateKids PRO - ¡Desafío de Héroes!</title>
     <style>
         :root {
             --primary: #4CAF50;
@@ -14,258 +14,297 @@
             --bg: #F0F4F8;
             --combo: #FFD700;
         }
-
         * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: manipulation; }
-
         body {
             margin: 0; padding: 0;
             background: linear-gradient(135deg, #74EBD5 0%, #9FACE6 100%);
-            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
             overflow: hidden;
         }
-
-        /* --- BOTÓN DE PROGRESO (esquina superior derecha) --- */
         #btn-progreso {
-            position: fixed;
-            top: 12px;
-            right: 12px;
-            z-index: 500;
-            background: white;
-            border: 3px solid var(--primary);
-            border-radius: 50%;
-            width: 52px;
-            height: 52px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-            padding: 0;
+            position: fixed; top: 12px; right: 12px; z-index: 500;
+            background: white; border: 3px solid var(--primary); border-radius: 50%;
+            width: 52px; height: 52px; font-size: 24px; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex;
+            align-items: center; justify-content: center; transition: 0.2s; padding: 0;
         }
         #btn-progreso:active { transform: scale(0.92); }
 
-        /* --- MODAL DE PROGRESO --- */
+        /* ── MODAL PROGRESO ── */
         #modal-progreso {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75);
-            display: none; justify-content: center; align-items: center;
-            z-index: 900;
+            background: rgba(0,0,0,0.75); display: none; justify-content: center;
+            align-items: center; z-index: 900;
         }
         #modal-progreso .contenido {
-            background: white;
-            width: 95%; max-width: 500px;
-            border-radius: 20px;
-            padding: 20px;
-            max-height: 85vh;
-            overflow-y: auto;
-            position: relative;
+            background: white; width: 95%; max-width: 520px; border-radius: 20px;
+            padding: 20px; max-height: 90vh; overflow-y: auto; position: relative;
         }
-        .prog-titulo {
-            font-size: 1.4rem;
-            font-weight: 900;
-            color: #333;
-            margin-bottom: 15px;
-        }
-        .prog-nivel-grupo {
-            background: #f8f8f8;
-            border-radius: 14px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            border: 2px solid #eee;
-        }
-        .prog-nivel-header {
-            background: var(--primary);
-            color: white;
-            font-weight: bold;
-            padding: 8px 14px;
-            font-size: 1rem;
-            text-align: left;
-        }
-        .prog-fase-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            padding: 8px 14px;
-            border-bottom: 1px solid #eee;
-            font-size: 0.85rem;
-            align-items: center;
-        }
-        .prog-fase-row:last-child { border-bottom: none; }
-        .prog-fase-row .label { font-weight: bold; color: #555; }
-        .prog-fase-row .val { color: #333; text-align: center; }
-        .prog-fase-row .val.record { color: var(--primary); font-weight: bold; }
-        .prog-fase-bloq { padding: 8px 14px; color: #bbb; font-style: italic; font-size: 0.85rem; }
-        .prog-header-cols {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            padding: 5px 14px;
-            font-size: 0.75rem;
-            color: #999;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .prog-header-cols span { text-align: center; }
-        .prog-header-cols span:first-child { text-align: left; }
+        .prog-titulo { font-size: 1.4rem; font-weight: 900; color: #333; margin-bottom: 15px; }
 
-        /* --- POPUP SELECTOR DE FASE --- */
+        /* Acordeón de progreso */
+        .prog-nivel-bloque { border-radius: 14px; margin-bottom: 10px; overflow: hidden; border: 2px solid #eee; }
+        .prog-nivel-header-btn {
+            background: var(--primary); color: white; font-weight: bold;
+            padding: 10px 14px; font-size: 1rem; text-align: left; width: 100%;
+            border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+        }
+        .prog-nivel-header-btn.skull-mode { background: #222; color: #ffeb3b; }
+        .prog-nivel-body { display: none; background: #fafafa; }
+        .prog-nivel-body.abierto { display: block; }
+
+        .prog-fase-ops { display: grid; grid-template-columns: repeat(4,1fr); gap:6px; padding: 8px 12px 10px; }
+        .prog-op-card {
+            background: white; border-radius: 10px; border: 2px solid #eee;
+            padding: 6px 4px; text-align: center; font-size: 0.78rem;
+        }
+        .prog-op-card .op-icon { font-size: 1.2rem; }
+        .prog-op-card .op-estado { font-weight: bold; margin-top: 2px; }
+        .prog-op-card .op-tiempo { color: #4CAF50; font-size: 0.7rem; }
+        .prog-op-card .op-intentos { color: #999; font-size: 0.7rem; }
+        .prog-op-card.superado { border-color: #4CAF50; background: #f0fff4; }
+        .prog-op-card.jugado   { border-color: #FF9800; background: #fff8f0; }
+        .prog-op-card.bloqueado{ border-color: #eee; background: #f5f5f5; opacity: 0.55; }
+        .prog-fase-label {
+            padding: 6px 14px 2px;
+            font-size: 0.82rem; font-weight: bold; color: #666;
+            border-top: 1px solid #eee;
+        }
+        .prog-fase-label:first-child { border-top: none; }
+
+        /* Barras verticales por pregunta en reporte */
+        .bars-reporte-wrap {
+            background: #f8f8f8; border-radius: 14px; padding: 14px 12px 10px;
+            margin: 12px 0; border: 1px solid #eee;
+        }
+        .bars-reporte-header {
+            display: grid; grid-template-columns: 52px 1fr 52px;
+            align-items: center; margin-bottom: 10px; gap: 6px;
+        }
+        .bars-reporte-header .bh-good {
+            font-size: 1.5rem; font-weight: 900; color: #4CAF50; text-align: left; line-height: 1;
+        }
+        .bars-reporte-header .bh-title {
+            text-align: center; font-size: 0.78rem; font-weight: bold; color: #666;
+        }
+        .bars-reporte-header .bh-bad {
+            font-size: 1.5rem; font-weight: 900; color: #F44336; text-align: right; line-height: 1;
+        }
+        .bars-reporte-header .bh-label {
+            font-size: 0.65rem; color: #aaa; font-weight: normal; display: block;
+        }
+        .bars-tiempo {
+            text-align: center; font-size: 0.82rem; font-weight: bold;
+            color: #555; margin-bottom: 10px;
+            background: white; border-radius: 20px; padding: 4px 12px;
+            display: inline-block; border: 1px solid #eee;
+        }
+        .bars-tiempo-row { text-align: center; margin-bottom: 10px; }
+        /* Fila de barras por pregunta */
+        .barras-fila {
+            display: flex; align-items: flex-end; gap: 3px;
+            height: 64px; padding: 0 2px;
+            overflow-x: auto; overflow-y: visible;
+        }
+        .barra-preg {
+            flex: 0 0 auto; width: 14px; min-height: 14px; border-radius: 4px;
+            position: relative; cursor: default; transition: opacity 0.2s;
+        }
+        .barra-preg.ok   { background: #4CAF50; }
+        .barra-preg.fail { background: #F44336; }
+        .barra-preg:hover::after {
+            content: attr(data-tip);
+            position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+            background: #333; color: white; font-size: 10px; padding: 2px 5px;
+            border-radius: 4px; white-space: nowrap; z-index: 10; pointer-events: none;
+        }
+        /* leyenda debajo */
+        .bars-leyenda {
+            display: flex; justify-content: center; gap: 16px;
+            margin-top: 8px; font-size: 0.72rem; color: #888;
+        }
+        .bars-leyenda span { display: flex; align-items: center; gap: 4px; }
+        .leg-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+        /* Acordeón en reporte papá */
+        .papa-nivel-btn {
+            width: 100%; text-align: left; background: #f0f0f0; border: none;
+            padding: 8px 12px; border-radius: 8px; font-weight: bold;
+            font-size: 0.85rem; cursor: pointer; margin-bottom: 4px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .papa-nivel-btn.abierto { background: var(--primary); color: white; }
+        .papa-nivel-content { display: none; margin-bottom: 8px; }
+        .papa-nivel-content.abierto { display: block; }
+
+        /* ── MODAL SELECTOR FASE ── */
         #modal-fase {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none; justify-content: center; align-items: center;
-            z-index: 800;
+            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 800;
         }
-        #modal-fase .contenido {
-            background: white;
-            width: 90%; max-width: 360px;
-            border-radius: 20px;
-            padding: 25px 20px;
-            text-align: center;
-        }
-        #modal-fase h3 {
-            margin: 0 0 18px 0;
-            font-size: 1.2rem;
-            color: #333;
-        }
+        #modal-fase .contenido { background: white; width: 90%; max-width: 360px; border-radius: 20px; padding: 25px 20px; text-align: center; }
+        #modal-fase h3 { margin: 0 0 18px 0; font-size: 1.2rem; color: #333; }
         .btn-fase-opcion {
-            display: block;
-            width: 100%;
-            margin: 8px 0;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: bold;
-            border: 2px solid transparent;
-            cursor: pointer;
-            background: #f0f0f0;
-            color: #555;
-            transition: 0.2s;
+            display: block; width: 100%; margin: 8px 0; padding: 14px;
+            border-radius: 12px; font-size: 1rem; font-weight: bold;
+            border: 2px solid transparent; cursor: pointer;
+            background: #f0f0f0; color: #555; transition: 0.2s; text-align: left;
         }
         .btn-fase-opcion.activa { background: var(--primary); color: white; }
-        .btn-fase-opcion.bloqueada { background: #f0f0f0; color: #bbb; cursor: not-allowed; }
-        .btn-fase-opcion .badge-record {
-            font-size: 0.75rem;
-            font-weight: normal;
-            display: block;
-            margin-top: 3px;
-            opacity: 0.8;
+        .btn-fase-opcion .badge-record { font-size: 0.75rem; font-weight: normal; display: block; margin-top: 3px; opacity: 0.8; }
+        .btn-cancelar-fase { margin-top: 10px; background: #eee; color: #888; width: 100%; padding: 10px; border-radius: 10px; border: none; font-size: 0.95rem; cursor: pointer; }
+
+        /* ── ESTADOS DEL PERSONAJE — DRAMÁTICOS ── */
+        @keyframes hero-feliz-bounce {
+            0%,100%{ transform:scale(1) rotate(-2deg); }
+            50%    { transform:scale(1.13) rotate(2deg); }
         }
-        .btn-cancelar-fase {
-            margin-top: 10px;
-            background: #eee;
-            color: #888;
-            width: 100%;
-            padding: 10px;
-            border-radius: 10px;
-            border: none;
-            font-size: 0.95rem;
-            cursor: pointer;
+        @keyframes hero-nervioso-shake {
+            0%,100%{ transform:translateX(0) rotate(0deg); }
+            20%    { transform:translateX(-5px) rotate(-4deg); }
+            40%    { transform:translateX(5px) rotate(4deg); }
+            60%    { transform:translateX(-4px) rotate(-2deg); }
+            80%    { transform:translateX(4px) rotate(2deg); }
+        }
+        @keyframes hero-peligro-convulse {
+            0%,100%{ transform:translateX(0) rotate(0deg) scale(1); }
+            15%    { transform:translateX(-8px) rotate(-6deg) scale(0.94); }
+            30%    { transform:translateX(8px) rotate(6deg) scale(1.06); }
+            45%    { transform:translateX(-6px) rotate(-4deg) scale(0.96); }
+            60%    { transform:translateX(7px) rotate(5deg) scale(1.04); }
+            75%    { transform:translateX(-5px) rotate(-3deg); }
+            90%    { transform:translateX(5px) rotate(3deg); }
+        }
+        @keyframes pulso-verde {
+            0%,100%{ box-shadow:0 0 0 4px #4CAF50, 0 0 18px rgba(76,175,80,0.5); }
+            50%    { box-shadow:0 0 0 10px rgba(76,175,80,0.08), 0 0 32px rgba(76,175,80,0.8); }
+        }
+        @keyframes pulso-rojo {
+            0%,100%{ box-shadow:0 0 0 4px #F44336, 0 0 20px rgba(244,67,54,0.6); }
+            50%    { box-shadow:0 0 0 12px rgba(244,67,54,0.05), 0 0 40px rgba(244,67,54,1); }
+        }
+        @keyframes pulso-naranja {
+            0%,100%{ box-shadow:0 0 0 4px #FF9800, 0 0 14px rgba(255,152,0,0.5); }
+            50%    { box-shadow:0 0 0 9px rgba(255,152,0,0.08), 0 0 28px rgba(255,152,0,0.8); }
+        }
+        @keyframes overlay-parpadeo-naranja {
+            0%,100%{ opacity:0.5; } 50%{ opacity:0.72; }
+        }
+        @keyframes overlay-parpadeo-rojo {
+            0%,100%{ opacity:0.6; } 50%{ opacity:0.85; }
+        }
+        @keyframes emoji-pop {
+            0%,100%{ transform:scale(1); } 50%{ transform:scale(1.35); }
         }
 
-        /* --- ESTILO DEL CARRUSEL --- */
-        .selector-container {
-            position: relative; width: 100%;
-            display: flex; align-items: center; justify-content: center; margin: 10px 0;
+        /* Overlay de daño sobre la imagen */
+        #hero-damage-overlay {
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            border-radius:50%; pointer-events:none; z-index:3;
+            opacity:0; transition:opacity 0.5s;
         }
-        .carrusel-visor {
-            width: 140px; height: 140px; overflow: hidden;
-            border-radius: 50%; border: 5px solid var(--primary);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: white;
+
+        /* Emoji grande y visible */
+        #hero-emoji {
+            position:absolute; bottom:-10px; right:-10px;
+            font-size:32px; z-index:10; pointer-events:none;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6));
+            line-height:1; transition: font-size 0.3s;
         }
+
+        /* ── FELIZ ── imagen brillante, rebota, aura verde */
+        #contenedor-hero.estado-feliz {
+            border-color:#4CAF50 !important;
+            animation: pulso-verde 1.4s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-feliz img {
+            filter: brightness(1.18) saturate(1.35) contrast(1.05);
+            animation: hero-feliz-bounce 1.5s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-feliz #hero-damage-overlay { opacity:0; }
+        #contenedor-hero.estado-feliz #hero-emoji { animation: emoji-pop 1.5s ease-in-out infinite; }
+
+        /* ── NORMAL ── sin efectos */
+        #contenedor-hero.estado-normal {
+            border-color:white !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation:none;
+        }
+        #contenedor-hero.estado-normal img { filter:none; animation:none; }
+        #contenedor-hero.estado-normal #hero-damage-overlay { opacity:0; }
+
+        /* ── NERVIOSO ── cara oscurecida, desaturada, tiembla, overlay marrón */
+        #contenedor-hero.estado-nervioso {
+            border-color:#FF9800 !important;
+            animation: pulso-naranja 1s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-nervioso img {
+            filter: brightness(0.72) saturate(0.25) sepia(0.45) contrast(1.15);
+            animation: hero-nervioso-shake 0.45s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-nervioso #hero-damage-overlay {
+            opacity:1;
+            background: radial-gradient(circle, rgba(120,50,0,0.55) 0%, rgba(200,80,0,0.38) 55%, transparent 100%);
+            animation: overlay-parpadeo-naranja 0.9s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-nervioso #hero-emoji { animation: emoji-pop 0.8s ease-in-out infinite; }
+
+        /* ── PELIGRO ── cara casi en blanco y negro rojiza, convulsiona fuerte, overlay rojo intenso */
+        #contenedor-hero.estado-peligro {
+            border-color:#F44336 !important;
+            animation: pulso-rojo 0.45s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-peligro img {
+            filter: brightness(0.48) saturate(0.08) sepia(1) hue-rotate(310deg) contrast(1.5);
+            animation: hero-peligro-convulse 0.32s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-peligro #hero-damage-overlay {
+            opacity:1;
+            background: radial-gradient(circle, rgba(200,0,0,0.65) 0%, rgba(244,67,54,0.5) 45%, transparent 100%);
+            animation: overlay-parpadeo-rojo 0.38s ease-in-out infinite;
+        }
+        #contenedor-hero.estado-peligro #hero-emoji { animation: emoji-pop 0.35s ease-in-out infinite; }
+
+        /* Timer colores */
+        #timer-display.timer-peligro  { color:#F44336!important; font-weight:900!important; }
+        #timer-display.timer-nervioso { color:#FF9800!important; }
+        .selector-container { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
+        .carrusel-visor { width: 140px; height: 140px; overflow: hidden; border-radius: 50%; border: 5px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: white; }
         .carrusel-visor img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .flecha-btn {
-            background: var(--primary); color: white; border: none;
-            width: 35px; height: 35px; border-radius: 50%; font-size: 18px;
-            cursor: pointer; margin: 0 10px; display: flex;
-            align-items: center; justify-content: center; transition: 0.2s;
-        }
+        .flecha-btn { background: var(--primary); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 18px; cursor: pointer; margin: 0 10px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         #nombre-heroe { font-weight: bold; color: #333; margin-bottom: 10px; font-size: 1.1rem; }
 
-        /* --- INTERFAZ PRINCIPAL --- */
-        #mensaje-bienvenida {
-            font-size: 2.5rem; color: white;
-            text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
-            margin: 0 0 10px 0; text-align: center; font-weight: 900;
-            animation: floating 3s ease-in-out infinite;
-        }
-        @keyframes floating {
-            0%, 100% { transform: translateY(0) rotate(-1deg); }
-            50% { transform: translateY(-10px) rotate(1deg); }
-        }
-        .main-menu {
-            background: white; width: 90%; max-width: 480px; padding: 20px;
-            border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center; position: relative; z-index: 10;
-        }
+        #mensaje-bienvenida { font-size: 2.5rem; color: white; text-shadow: 4px 4px 0px rgba(0,0,0,0.2); margin: 0 0 10px 0; text-align: center; font-weight: 900; animation: floating 3s ease-in-out infinite; }
+        @keyframes floating { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+
+        .main-menu { background: white; width: 90%; max-width: 480px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; position: relative; z-index: 10; }
         .grid-niveles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        button {
-            padding: 10px; border: 2px solid transparent;
-            border-radius: 12px; font-size: 15px; font-weight: bold;
-            cursor: pointer; transition: 0.2s; background: #f0f0f0; color: #555;
-        }
+        button { padding: 10px; border: 2px solid transparent; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; background: #f0f0f0; color: #555; }
         .btn-level.activo { background: var(--primary); color: white; }
         .btn-skull { background: #455a64; color: #ffeb3b; }
         .btn-skull.activo { background: #000; color: #ffeb3b; border: 2px solid #ffeb3b; }
         .btn-op { background: var(--secondary); color: white; font-size: 22px; width: 60px; margin: 4px; }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; 
-            justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-content {
-            background: white; width: 95%; max-width: 550px; padding: 25px;
-            border-radius: 20px; text-align: center; position: relative;
-        }
+        /* ── MODAL JUEGO ── */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; width: 95%; max-width: 550px; padding: 25px; border-radius: 20px; text-align: center; position: relative; max-height: 95vh; overflow-y: auto; }
         .shake { animation: shake 0.4s; border: 3px solid var(--error); }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); }
-            75% { transform: translateX(-10px); }
-        }
-        #timer-display {
-            font-size: 22px; font-weight: bold; color: #444;
-            background: #f8f8f8; padding: 5px 20px; border-radius: 30px;
-            display: inline-block; border: 1px solid #eee; margin-bottom: 15px;
-        }
-        .pista-progreso {
-            width: 100%; height: 140px; background: #f1f1f1;
-            border-radius: 15px; position: relative; margin: 15px 0;
-            border-bottom: 5px solid #ccc; overflow: visible;
-        }
-        .personaje-movil {
-            position: absolute; bottom: 10px; left: 0%; 
-            width: 100px; height: 100px; background: white;
-            border-radius: 50%; border: 4px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            overflow: hidden; display: flex; justify-content: center; align-items: center;
-            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } }
+
+        #timer-display { font-size: 22px; font-weight: bold; color: #444; background: #f8f8f8; padding: 5px 20px; border-radius: 30px; display: inline-block; border: 1px solid #eee; margin-bottom: 15px; }
+        .pista-progreso { width: 100%; height: 140px; background: #f1f1f1; border-radius: 15px; position: relative; margin: 15px 0; border-bottom: 5px solid #ccc; overflow: visible; }
+        .personaje-movil { position: absolute; bottom: 10px; left: 0%; width: 100px; height: 100px; background: white; border-radius: 50%; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; display: flex; justify-content: center; align-items: center; transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
         .personaje-movil img { width: 100%; height: 100%; object-fit: cover; }
         .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
         .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.4s; }
         #pregunta-txt { font-size: 50px; font-weight: bold; color: #222; margin: 15px 0; }
-        #input-resp { 
-            width: 130px; padding: 8px; font-size: 32px; text-align: center; 
-            border: 2px solid #ddd; border-radius: 10px; outline: none; background: #fffde7;
-        }
-        .numpad-container {
-            display: none; grid-template-columns: repeat(3, 1fr);
-            gap: 10px; max-width: 280px; margin: 20px auto 0;
-        }
-        .btn-numpad {
-            background: #eee; border: none; padding: 15px;
-            font-size: 20px; font-weight: bold; border-radius: 10px; color: #333;
-        }
+        #input-resp { width: 130px; padding: 8px; font-size: 32px; text-align: center; border: 2px solid #ddd; border-radius: 10px; outline: none; background: #fffde7; }
+        .numpad-container { display: none; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 20px auto 0; }
+        .btn-numpad { background: #eee; border: none; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 10px; color: #333; }
         .btn-doble-altura { grid-row: span 2; height: 100%; }
         .btn-x-debajo { grid-column: 2; }
-        #observaciones-area {
-            background: #f9f9f9; border-left: 5px solid var(--secondary);
-            padding: 10px; margin: 10px 0; font-style: italic;
-            color: #444; text-align: center; border-radius: 5px;
-        }
-        #tiempo-logrado { font-weight: bold; color: var(--primary); margin: 5px 0; font-size: 1.1rem; }
+        #observaciones-area { background: #f9f9f9; border-left: 5px solid var(--secondary); padding: 10px; margin: 10px 0; font-style: italic; color: #444; text-align: center; border-radius: 5px; }
+        #tiempo-logrado { font-weight: bold; color: var(--primary); margin: 5px 0; font-size: 1rem; }
 
         @media (max-width: 600px) {
             #mensaje-bienvenida { font-size: 2rem; }
@@ -274,39 +313,41 @@
             .numpad-container { display: grid; }
             #input-resp { pointer-events: none; }
         }
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        .report-table th, .report-table td { padding: 8px; border-bottom: 1px solid #eee; text-align: center; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #ccc; background: none; border: none; padding: 0; }
 
-        .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .report-table th, .report-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
-        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #ccc; }
+        /* Desbloqueo visual por op en selector de fase */
+        .op-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .op-pill { font-size: 0.7rem; border-radius: 20px; padding: 2px 7px; font-weight: bold; }
+        .op-pill.ok  { background: #c8e6c9; color: #2e7d32; }
+        .op-pill.wip { background: #fff3e0; color: #e65100; }
+        .op-pill.locked { background: #eee; color: #bbb; }
     </style>
 </head>
 <body>
 
-<!-- BOTÓN DE PROGRESO FIJO -->
 <button id="btn-progreso" onclick="abrirModalProgreso()" title="Ver mi progreso">📊</button>
 
 <h1 id="mensaje-bienvenida">HOLA...</h1>
 
 <div class="main-menu">
     <h1>🎯 MateKids PRO</h1>
-    
     <p style="margin-bottom: 5px;">👤 Elige a tu Personaje</p>
     <div class="selector-container">
         <button class="flecha-btn" onclick="cambiarFoto(-1)">❮</button>
-        <div class="carrusel-visor">
-            <img id="img-selector" src="IMAGENES/deku.jpeg">
-        </div>
+        <div class="carrusel-visor"><img id="img-selector" src="IMAGENES/deku.jpeg" onerror="this.src='https://placehold.co/140x140/4CAF50/white?text=HEROE'"></div>
         <button class="flecha-btn" onclick="cambiarFoto(1)">❯</button>
     </div>
     <div id="nombre-heroe">DEKU</div>
 
     <p>Selecciona tu Nivel</p>
     <div class="grid-niveles">
-        <button id="n1" class="btn-level activo" onclick="abrirSelectorFase(1, false)">Nivel 1</button>
+        <button id="n1"  class="btn-level activo" onclick="abrirSelectorFase(1, false)">Nivel 1</button>
         <button id="n1k" class="btn-level btn-skull" onclick="abrirSelectorFase(1, true)">Nivel 1 💀</button>
-        <button id="n2" class="btn-level" onclick="abrirSelectorFase(2, false)">Nivel 2</button>
+        <button id="n2"  class="btn-level" onclick="abrirSelectorFase(2, false)">Nivel 2</button>
         <button id="n2k" class="btn-level btn-skull" onclick="abrirSelectorFase(2, true)">Nivel 2 💀</button>
-        <button id="n3" class="btn-level" onclick="abrirSelectorFase(3, false)">Nivel 3</button>
+        <button id="n3"  class="btn-level" onclick="abrirSelectorFase(3, false)">Nivel 3</button>
         <button id="n3k" class="btn-level btn-skull" onclick="abrirSelectorFase(3, true)">Nivel 3 💀</button>
     </div>
 
@@ -318,19 +359,23 @@
         <button class="btn-op" onclick="abrirJuego('/')">÷</button>
     </div>
     <div id="ops-skull" style="display:none">
-        <button class="btn-op" style="width:100%; background:#000" onclick="abrirJuego('?')">DESAFÍO ALEATORIO 💀</button>
+        <button class="btn-op" style="width:auto; background:#000; padding:10px 20px;" onclick="abrirJuego('?')">DESAFÍO ALEATORIO 💀</button>
     </div>
 </div>
 
 <!-- MODAL JUEGO -->
 <div id="modal" class="modal-overlay">
     <div class="modal-content" id="main-modal-content">
-        <span class="close-btn" onclick="cerrarJuego()">&times;</span>
+        <button class="close-btn" onclick="cerrarJuego()">&times;</button>
         <div id="game-area">
             <div id="timer-display">00:00</div>
             <div class="pista-progreso">
-                <div id="contenedor-hero" class="personaje-movil">
-                    <img id="status-img" src="IMAGENES/deku.jpeg">
+                <div id="hero-wrapper" style="position:absolute; bottom:10px; left:0%; transition: left 0.8s cubic-bezier(0.4,0,0.2,1);">
+                    <div id="contenedor-hero" class="personaje-movil estado-normal" style="position:relative; left:0; bottom:0; transition:none;">
+                        <img id="status-img" src="IMAGENES/deku.jpeg" onerror="this.src='https://placehold.co/100x100/4CAF50/white?text=HRO'">
+                        <div id="hero-damage-overlay"></div>
+                    </div>
+                    <div id="hero-emoji" style="position:absolute; bottom:-8px; right:-8px; font-size:32px; z-index:10; pointer-events:none; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.6)); line-height:1;">😊</div>
                 </div>
             </div>
             <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
@@ -346,24 +391,63 @@
                 <button class="btn-numpad" onclick="agregarNumero(7)">7</button>
                 <button class="btn-numpad" onclick="agregarNumero(8)">8</button>
                 <button class="btn-numpad" onclick="agregarNumero(9)">9</button>
-                <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">LISTO</button>
+                <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">OK</button>
                 <button class="btn-numpad" onclick="agregarNumero(0)">0</button>
-                <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">LISTO</button>
+                <button class="btn-numpad btn-doble-altura" style="background:var(--primary); color:white" onclick="enviarRespuesta()">OK</button>
                 <button class="btn-numpad btn-x-debajo" style="background:var(--error); color:white" onclick="limpiarTodo()">X</button>
             </div>
             <div id="mensaje-modal" style="height: 25px; margin-top: 15px; font-weight: bold;"></div>
         </div>
+
         <div id="report-area" style="display:none">
-            <h2 id="report-title">Reporte</h2>
-            <div id="tiempo-logrado"></div>
-            <div id="observaciones-area"></div>
-            <div style="max-height: 250px; overflow-y: auto;">
-                <table class="report-table">
-                    <thead><tr><th>Reto</th><th>Tú</th><th>Correcto</th></tr></thead>
+
+            <!-- TÍTULO -->
+            <h2 id="report-title" style="margin:0 0 10px 0; font-size:1.15rem; text-align:center;"></h2>
+
+            <!-- RESUMEN COMPACTO: buenas | tiempo | malas -->
+            <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6px; background:#f8f8f8; border-radius:12px; padding:8px 12px; margin-bottom:8px;">
+                <div style="text-align:center;">
+                    <div style="font-size:1.8rem; font-weight:900; color:#4CAF50; line-height:1;" id="rep-buenas">0</div>
+                    <div style="font-size:0.65rem; color:#4CAF50; font-weight:bold; margin-top:2px;">✅ Correctas</div>
+                </div>
+                <div style="text-align:center; border-left:1px solid #e0e0e0; border-right:1px solid #e0e0e0; padding:0 10px;">
+                    <div style="font-size:1rem; font-weight:bold; color:#444;" id="rep-tiempo">0s</div>
+                    <div style="font-size:0.6rem; color:#999; margin-top:1px;" id="rep-tiempo-total"></div>
+                    <div style="font-size:0.6rem; color:#bbb;">⏱️ Tiempo</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:1.8rem; font-weight:900; color:#F44336; line-height:1;" id="rep-malas">0</div>
+                    <div style="font-size:0.65rem; color:#F44336; font-weight:bold; margin-top:2px;">❌ Errores</div>
+                </div>
+            </div>
+
+            <!-- BARRAS por pregunta (mini) -->
+            <div id="rep-puntos-fila" style="display:flex; align-items:flex-end; justify-content:center; gap:3px; height:36px; margin-bottom:4px; flex-wrap:wrap;"></div>
+            <div style="display:flex; justify-content:center; gap:14px; font-size:0.68rem; color:#aaa; margin-bottom:8px;">
+                <span><span style="display:inline-block;width:8px;height:8px;background:#4CAF50;border-radius:2px;margin-right:3px;"></span>Correcta</span>
+                <span><span style="display:inline-block;width:8px;height:8px;background:#F44336;border-radius:2px;margin-right:3px;"></span>Incorrecta</span>
+            </div>
+
+            <!-- OBSERVACIÓN -->
+            <div id="observaciones-area" style="margin-bottom:10px;"></div>
+            <div id="desbloqueo-msg" style="font-size:0.82rem; text-align:center; margin-bottom:10px;"></div>
+
+            <!-- ═══ TABLA PRINCIPAL: Reto | Tú | ✓ ═══ -->
+            <div style="border-radius:12px; border:1.5px solid #e8e8e8; overflow:hidden; margin-bottom:12px;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.92rem;">
+                    <thead>
+                        <tr style="background:#f5f5f5;">
+                            <th style="padding:10px 16px; text-align:left; font-weight:600; color:#555; border-bottom:1.5px solid #e8e8e8;">Reto</th>
+                            <th style="padding:10px 12px; text-align:center; font-weight:600; color:#555; border-bottom:1.5px solid #e8e8e8;">Tú</th>
+                            <th style="padding:10px 12px; text-align:center; font-weight:600; color:#555; border-bottom:1.5px solid #e8e8e8;">✓</th>
+                        </tr>
+                    </thead>
                     <tbody id="report-body"></tbody>
                 </table>
             </div>
-            <button id="btn-volver-reporte" onclick="cerrarJuego()" style="margin-top:20px; width:100%; background: var(--primary); color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:bold; border-radius:10px">Volver</button>
+
+            <!-- BOTÓN VOLVER -->
+            <button id="btn-volver-reporte" onclick="cerrarJuego()" style="width:100%; background:var(--primary); color:white; border:none; padding:14px; border-radius:10px; font-size:16px; font-weight:bold; margin-bottom:10px;">Volver</button>
         </div>
     </div>
 </div>
@@ -380,7 +464,7 @@
 <!-- MODAL PROGRESO -->
 <div id="modal-progreso" onclick="cerrarModalProgreso(event)">
     <div class="contenido">
-        <span class="close-btn" onclick="document.getElementById('modal-progreso').style.display='none'">&times;</span>
+        <button class="close-btn" onclick="document.getElementById('modal-progreso').style.display='none'">&times;</button>
         <div class="prog-titulo">📊 Mi Progreso</div>
         <div id="progreso-contenido"></div>
     </div>
@@ -391,16 +475,16 @@
 // PERSONAJES
 // =====================================================
 const misPersonajes = [
-    { n: 'Messi', img: 'IMAGENES/Messi.jpeg' },
-    { n: 'CR7', img: 'IMAGENES/CR7.jpeg' },
-    { n: 'Pikachu', img: 'IMAGENES/Pikachu.jpeg' },
-    { n: 'Goku', img: 'IMAGENES/Goku.jpeg' },
-    { n: 'Luffy', img: 'IMAGENES/Luffy.jpeg' },
-    { n: 'DEKU', img: 'IMAGENES/deku.jpeg' },
+    { n: 'Messi',    img: 'IMAGENES/Messi.jpeg' },
+    { n: 'CR7',      img: 'IMAGENES/CR7.jpeg' },
+    { n: 'Pikachu',  img: 'IMAGENES/Pikachu.jpeg' },
+    { n: 'Goku',     img: 'IMAGENES/Goku.jpeg' },
+    { n: 'Luffy',    img: 'IMAGENES/Luffy.jpeg' },
+    { n: 'DEKU',     img: 'IMAGENES/deku.jpeg' },
     { n: 'Jungkook', img: 'IMAGENESNIÑAS/Jungkook.png' },
-    { n: 'Ladybug', img: 'IMAGENESNIÑAS/ladybug.png' },
-    { n: 'Masha', img: 'IMAGENESNIÑAS/Masha.png' },
-    { n: 'Moana', img: 'IMAGENESNIÑAS/moana.png' }
+    { n: 'Ladybug',  img: 'IMAGENESNIÑAS/ladybug.png' },
+    { n: 'Masha',    img: 'IMAGENESNIÑAS/Masha.png' },
+    { n: 'Moana',    img: 'IMAGENESNIÑAS/moana.png' }
 ];
 let indexHeroe = 5;
 let personajeElegido = misPersonajes[indexHeroe].img;
@@ -409,74 +493,125 @@ let personajeElegido = misPersonajes[indexHeroe].img;
 // CONFIGURACIÓN DE FASES
 // =====================================================
 const configFases = [
-    { suffix: '',   time: 60,  label: 'Base' },
-    { suffix: '.A', time: 45,  label: 'Fase A' },
-    { suffix: '.B', time: 30,  label: 'Fase B' },
-    { suffix: '.C', time: 21,  label: 'Fase C' }
+    { suffix: '',   time: 60, label: 'Base' },
+    { suffix: '.A', time: 45, label: 'Fase A' },
+    { suffix: '.B', time: 30, label: 'Fase B' },
+    { suffix: '.C', time: 21, label: 'Fase C' }
 ];
 
+const OPERACIONES_NORMALES = ['+', '-', '*', '/'];
+const OPERACIONES_ALL = ['+', '-', '*', '/', '?'];
+const OPNAMES  = { '+': 'Suma', '-': 'Resta', '*': 'Mult', '/': 'Div', '?': 'Aleatorio' };
+const OPSIMBOLO= { '+': '➕', '-': '➖', '*': '✖️', '/': '➗', '?': '🎲' };
+
 // =====================================================
-// PROGRESO GUARDADO EN LOCALSTORAGE (POR JUGADOR)
+// LOCALSTORAGE — CLAVES
 // =====================================================
-// Cada jugador tiene su propia clave: matekids_progreso_NOMBRE
+// Clave de progreso por operación individual:
+// n1_f0_+ / skull1_f2_* etc.
+// Una fase f_{i} de operación X está desbloqueada si la f_{i-1} de ESA operación fue superada.
+// Para pasar al nivel siguiente: las 4 ops deben tener TODAS sus fases superadas.
+
 function claveJugador() {
-    const nombre = (localStorage.getItem('jugadorActual') || 'anonimo').toLowerCase().trim();
-    return 'matekids_progreso_' + nombre;
+    return 'matekids_progreso_' + (localStorage.getItem('jugadorActual') || 'anonimo').toLowerCase().trim();
+}
+function claveHistorial() {
+    return 'matekids_hist_' + (localStorage.getItem('jugadorActual') || 'anonimo').toLowerCase().trim();
 }
 function cargarProgreso() {
-    try {
-        return JSON.parse(localStorage.getItem(claveJugador()) || '{}');
-    } catch(e) { return {}; }
+    try { return JSON.parse(localStorage.getItem(claveJugador()) || '{}'); } catch(e) { return {}; }
 }
-function guardarProgreso(data) {
-    localStorage.setItem(claveJugador(), JSON.stringify(data));
-}
-function claveProgreso(nivel, faseIndex, skull) {
-    return (skull ? 'skull' : 'n') + nivel + '_f' + faseIndex;
+function guardarProgreso(data) { localStorage.setItem(claveJugador(), JSON.stringify(data)); }
+
+// Clave única por (nivel, faseIndex, skull, op)
+function claveP(nivel, faseIndex, skull, op) {
+    return (skull ? 'skull' : 'n') + nivel + '_f' + faseIndex + '_' + (op || 'X');
 }
 
-// Fase desbloqueada más alta por nivel (para saber hasta dónde llegó)
-function fasesDesbloqueadas(nivel, skull) {
+// ¿Fase desbloqueada para una operación específica?
+function faseDesbloqueadaParaOp(nivel, faseIndex, skull, op) {
+    if (faseIndex === 0) return true; // La fase base siempre está disponible
     const prog = cargarProgreso();
-    let max = 0;
-    for (let i = 1; i <= 3; i++) {
-        const k = claveProgreso(nivel, i, skull);
-        if (prog[k] && prog[k].desbloqueado) max = i;
-        else break;
-    }
-    return max; // 0 = solo base, 1 = A desbloqueada, etc.
+    const kPrev = claveP(nivel, faseIndex - 1, skull, op);
+    return prog[kPrev] && prog[kPrev].superado;
 }
 
-// Registrar resultado de una partida
-function registrarPartida(nivel, faseIndex, tiempoUsado, aciertos, fallos, completo) {
+// ¿Nivel desbloqueado? → las 4 ops deben haber superado AL MENOS UNA fase del nivel anterior
+// En realidad según tu regla: las 4 ops deben haber superado TODAS las fases (0,1,2,3) del nivel anterior
+function nivelDesbloqueado(nivel, skull) {
+    if (nivel === 1) return true;
     const prog = cargarProgreso();
-    const k = claveProgreso(nivel, faseIndex, esModoSkull);
-    if (!prog[k]) prog[k] = { desbloqueado: true, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null };
+    return OPERACIONES_NORMALES.every(op => {
+        // Verificar que TODAS las fases de (nivel-1) estén superadas para esta op
+        return configFases.every((_, fi) => {
+            const k = claveP(nivel - 1, fi, skull, op);
+            return prog[k] && prog[k].superado;
+        });
+    });
+}
+
+function actualizarBotonesNivel() {
+    [1, 2, 3].forEach(n => {
+        [false, true].forEach(skull => {
+            const btn = document.getElementById(skull ? `n${n}k` : `n${n}`);
+            if (!btn) return;
+            const ok = nivelDesbloqueado(n, skull);
+            btn.disabled = !ok;
+            btn.style.opacity = ok ? '1' : '0.38';
+            btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+            const textoBase = skull ? `Nivel ${n} 💀` : `Nivel ${n}`;
+            btn.innerText = ok ? textoBase : `🔒 ${n}${skull ? ' 💀' : ''}`;
+        });
+    });
+}
+
+// Registrar partida — desbloquea SOLO la siguiente fase para ESA operación
+function registrarPartida(nivel, faseIndex, op, tiempoUsado, aciertos, fallos, completo) {
+    const prog = cargarProgreso();
+    const k = claveP(nivel, faseIndex, esModoSkull, op);
+    if (!prog[k]) prog[k] = { desbloqueado: true, superado: false, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null };
     prog[k].partidas++;
     prog[k].aciertos += aciertos;
-    prog[k].fallos += fallos;
-    // Mejor tiempo solo si completó
+    prog[k].fallos   += fallos;
     if (completo) {
-        if (prog[k].mejorTiempo === null || tiempoUsado < prog[k].mejorTiempo) {
-            prog[k].mejorTiempo = tiempoUsado;
-        }
-        // Desbloquear siguiente fase si existe
+        if (prog[k].mejorTiempo === null || tiempoUsado < prog[k].mejorTiempo) prog[k].mejorTiempo = tiempoUsado;
+        prog[k].superado = true;
+        // Desbloquear siguiente fase SOLO para ESTA operación
         if (faseIndex < 3) {
-            const kSig = claveProgreso(nivel, faseIndex + 1, esModoSkull);
-            if (!prog[kSig]) prog[kSig] = { desbloqueado: true, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null };
+            const kSig = claveP(nivel, faseIndex + 1, esModoSkull, op);
+            if (!prog[kSig]) prog[kSig] = { desbloqueado: true, superado: false, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null };
             else prog[kSig].desbloqueado = true;
         }
     }
     guardarProgreso(prog);
+    actualizarBotonesNivel();
+    agregarAlHistorial(nivel, faseIndex, esModoSkull, op, tiempoUsado, aciertos, fallos, completo);
+}
+
+// ── Historial permanente ──────────────────────────────────────
+function cargarHistorial() {
+    try { return JSON.parse(localStorage.getItem(claveHistorial()) || '[]'); } catch(e) { return []; }
+}
+function guardarHistorial(h) { localStorage.setItem(claveHistorial(), JSON.stringify(h)); }
+function agregarAlHistorial(nivel, faseIndex, skull, op, tiempoUsado, aciertos, fallos, completo) {
+    const h = cargarHistorial();
+    // Guardamos también las preguntas de esta sesión (máx 30 para no saturar)
+    const pregs = (historialPreguntas || []).slice(0, 30).map(p => ({
+        txt: p.txt, u: p.u, c: p.c, ok: p.ok
+    }));
+    h.push({ ts: Date.now(), nivel, faseIndex, skull, op, tiempoUsado, aciertos, fallos, completo, pregs });
+    // Limitar historial a las últimas 200 partidas
+    if (h.length > 200) h.splice(0, h.length - 200);
+    guardarHistorial(h);
 }
 
 // =====================================================
-// CONTROL DEL BOTÓN ATRÁS
+// BOTÓN ATRÁS
 // =====================================================
 window.addEventListener('popstate', function() {
-    const modal = document.getElementById('modal');
-    const mFase = document.getElementById('modal-fase');
-    const mProg = document.getElementById('modal-progreso');
+    const modal  = document.getElementById('modal');
+    const mFase  = document.getElementById('modal-fase');
+    const mProg  = document.getElementById('modal-progreso');
     if (modal.style.display === 'flex') cerrarJuego();
     else if (mFase.style.display === 'flex') mFase.style.display = 'none';
     else if (mProg.style.display === 'flex') mProg.style.display = 'none';
@@ -490,21 +625,20 @@ window.onload = function() {
     const nombre = localStorage.getItem('jugadorActual');
     if (nombre) document.getElementById('mensaje-bienvenida').innerText = "¡HOLA, " + nombre.toUpperCase() + "! ✨";
     history.pushState(null, '', window.location.href);
-    // Marcar fase base de cada nivel como desbloqueada (normal y skull)
+    // Asegurar que la fase 0 de nivel 1 esté disponible para todas las ops
     const prog = cargarProgreso();
-    [1,2,3].forEach(n => {
-        [false, true].forEach(sk => {
-            const k = claveProgreso(n, 0, sk);
-            if (!prog[k]) { prog[k] = { desbloqueado: true, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null }; }
+    [false, true].forEach(sk => {
+        OPERACIONES_ALL.forEach(op => {
+            const k = claveP(1, 0, sk, op);
+            if (!prog[k]) prog[k] = { desbloqueado: true, superado: false, partidas: 0, aciertos: 0, fallos: 0, mejorTiempo: null };
         });
     });
     guardarProgreso(prog);
+    actualizarBotonesNivel();
 };
 
 function cambiarFoto(dir) {
-    indexHeroe += dir;
-    if (indexHeroe < 0) indexHeroe = misPersonajes.length - 1;
-    if (indexHeroe >= misPersonajes.length) indexHeroe = 0;
+    indexHeroe = (indexHeroe + dir + misPersonajes.length) % misPersonajes.length;
     const p = misPersonajes[indexHeroe];
     document.getElementById('img-selector').src = p.img;
     document.getElementById('nombre-heroe').innerText = p.n.toUpperCase();
@@ -513,43 +647,43 @@ function cambiarFoto(dir) {
 }
 
 // =====================================================
-// SELECTOR DE FASE (POPUP)
+// SELECTOR DE FASE
 // =====================================================
 let nivelActual = 1, esModoSkull = false, faseActual = 0;
 
 function abrirSelectorFase(n, skull) {
-    nivelActual = n;
-    esModoSkull = skull;
-
+    if (!nivelDesbloqueado(n, skull)) return;
+    nivelActual = n; esModoSkull = skull;
     document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
     document.getElementById(skull ? `n${n}k` : `n${n}`).classList.add('activo');
     document.getElementById('ops-normal').style.display = skull ? 'none' : 'block';
     document.getElementById('ops-skull').style.display  = skull ? 'block' : 'none';
 
     const prog = cargarProgreso();
-    const desbMax = fasesDesbloqueadas(n, skull); // cuántas fases extra desbloqueadas
-
-    // Si solo tiene la base (desbMax=0), ir directo sin popup
-    if (desbMax === 0) {
-        faseActual = 0;
-        return; // solo seleccionan y esperan a elegir operación
-    }
-
-    // Mostrar popup con opciones
     document.getElementById('titulo-selector-fase').innerText = `Nivel ${n} — Elige tu fase`;
     const cont = document.getElementById('opciones-fase');
     cont.innerHTML = '';
 
     configFases.forEach((cf, i) => {
-        if (i > desbMax) return; // no mostrar fases no desbloqueadas
-        const k = claveProgreso(n, i, skull);
-        const datos = prog[k];
+        // Mostrar la fase si AL MENOS UNA operación la tiene disponible (desbloqueada)
+        const opsDisponibles = OPERACIONES_NORMALES.filter(op => faseDesbloqueadaParaOp(n, i, skull, op));
+        if (opsDisponibles.length === 0 && i > 0) return;
+
         const btn = document.createElement('button');
         btn.className = 'btn-fase-opcion' + (i === faseActual ? ' activa' : '');
-        let recordTxt = datos && datos.mejorTiempo !== null
-            ? `⏱️ Récord: ${datos.mejorTiempo}s | 🎮 Partidas: ${datos.partidas}`
-            : `🎮 Partidas: ${datos ? datos.partidas : 0}`;
-        btn.innerHTML = `Nivel ${n}${cf.suffix} — ${cf.time}s<span class="badge-record">${recordTxt}</span>`;
+
+        // Pills de estado por operación
+        const pillsHtml = OPERACIONES_NORMALES.map(op => {
+            const k = claveP(n, i, skull, op);
+            const d = prog[k];
+            const disponible = faseDesbloqueadaParaOp(n, i, skull, op);
+            if (!disponible) return `<span class="op-pill locked">${OPSIMBOLO[op]} 🔒</span>`;
+            if (!d || d.partidas === 0) return `<span class="op-pill wip">${OPSIMBOLO[op]} —</span>`;
+            if (d.superado) return `<span class="op-pill ok">${OPSIMBOLO[op]} ✅ ${d.mejorTiempo ? d.mejorTiempo+'s':''}</span>`;
+            return `<span class="op-pill wip">${OPSIMBOLO[op]} 🔥${d.partidas}x</span>`;
+        }).join('');
+
+        btn.innerHTML = `<strong>Nivel ${n}${cf.suffix}</strong> — ${cf.time}s<div class="op-pills">${pillsHtml}</div>`;
         btn.onclick = () => {
             faseActual = i;
             document.getElementById('modal-fase').style.display = 'none';
@@ -562,9 +696,7 @@ function abrirSelectorFase(n, skull) {
 }
 
 function cerrarSelectorFase(e) {
-    if (e.target === document.getElementById('modal-fase')) {
-        document.getElementById('modal-fase').style.display = 'none';
-    }
+    if (e.target === document.getElementById('modal-fase')) document.getElementById('modal-fase').style.display = 'none';
 }
 
 // =====================================================
@@ -582,65 +714,143 @@ const sonidos = {
     acierto2:  new Audio('SNDbien.mp3/Progreso.mp3'),
     final:     new Audio('SNDbien.mp3/Terminado.mp3')
 };
-
-function detenerAudios() { Object.values(sonidos).forEach(s => { s.pause(); s.currentTime = 0; }); }
+function detenerAudios() { Object.values(sonidos).forEach(s => { try { s.pause(); s.currentTime = 0; } catch(e){} }); }
 function agregarNumero(n) { document.getElementById('input-resp').value += n; }
 function limpiarTodo() { document.getElementById('input-resp').value = ""; }
 function enviarRespuesta() { validarLogica(); }
 
 function abrirJuego(op) {
-    operacionElegida = op;
-    progresoActual = 0;
-    historialPreguntas = [];
-    respuestasUsadas.clear();
-
+    // Verificar que la operación esté disponible en la fase actual
+    if (op !== '?' && !faseDesbloqueadaParaOp(nivelActual, faseActual, esModoSkull, op)) {
+        alert(`La operación ${OPNAMES[op]} no está disponible aún en esta fase. ¡Completa la fase anterior primero!`);
+        return;
+    }
+    operacionElegida = op; progresoActual = 0; historialPreguntas = []; respuestasUsadas.clear();
     const config = configFases[faseActual];
-    tiempoInicial = config.time;
-    tiempoRestante = tiempoInicial;
+    tiempoInicial = config.time; tiempoRestante = tiempoInicial;
     metaPreguntas = nivelActual * 10;
-
     document.getElementById('status-img').src = personajeElegido;
     document.getElementById('game-area').style.display = 'block';
     document.getElementById('report-area').style.display = 'none';
+    document.getElementById('bar').style.width = '0%';
+    const hw = document.getElementById('hero-wrapper');
+    if (hw) hw.style.left = '0%';
+    document.getElementById('timer-display').innerText = '1:00';
+    document.getElementById('timer-display').classList.remove('timer-peligro','timer-nervioso');
+    const ch = document.getElementById('contenedor-hero');
+    ch.classList.remove('estado-feliz','estado-normal','estado-nervioso','estado-peligro');
+    ch.classList.add('estado-normal');
+    const he = document.getElementById('hero-emoji');
+    if (he) he.innerText = '😊';
     document.getElementById('modal').style.display = 'flex';
     history.pushState(null, '', window.location.href);
-    actualizarProgreso();
-    nuevaPregunta();
-    iniciarCronometro();
+    actualizarProgreso(); nuevaPregunta(); iniciarCronometro();
 }
 
 function generarLogicaPregunta() {
+    const opReal = operacionElegida === '?' ? OPERACIONES_NORMALES[Math.floor(Math.random()*4)] : operacionElegida;
     let intentosLoop = 0, v;
-    while (intentosLoop < 100) {
-        let op = operacionElegida === '?' ? ['+','-','*','/'][Math.floor(Math.random()*4)] : operacionElegida;
+
+    while (intentosLoop < 500) {
         let t1, t2, res;
+        // Rangos según nivel — ampliados en intentos tardíos para evitar bloqueo
+        const ampliar = intentosLoop > 100;
+
         if (nivelActual === 1) {
-            if(op==='/'){res=Math.floor(Math.random()*8)+2;t2=Math.floor(Math.random()*4)+2;t1=res*t2;}
-            else if(op==='*'){t1=Math.floor(Math.random()*9)+1;t2=Math.floor(Math.random()*9)+1;res=t1*t2;}
-            else if(op==='-'){t1=Math.floor(Math.random()*12)+1;t2=Math.floor(Math.random()*t1)+1;res=t1-t2;}
-            else{t1=Math.floor(Math.random()*9)+1;t2=Math.floor(Math.random()*9)+1;res=t1+t2;}
+            if (opReal === '+') {
+                t1 = Math.floor(Math.random()*(ampliar?18:9))+1;
+                t2 = Math.floor(Math.random()*(ampliar?18:9))+1;
+                res = t1+t2;
+            } else if (opReal === '-') {
+                t1 = Math.floor(Math.random()*(ampliar?36:17))+2;
+                t2 = Math.floor(Math.random()*(t1-1))+1;
+                res = t1-t2;
+            } else if (opReal === '*') {
+                t1 = Math.floor(Math.random()*(ampliar?12:9))+1;
+                t2 = Math.floor(Math.random()*(ampliar?12:9))+1;
+                res = t1*t2;
+            } else {
+                res = Math.floor(Math.random()*(ampliar?20:8))+2;
+                t2  = Math.floor(Math.random()*(ampliar?9:4))+2;
+                t1  = res*t2;
+            }
         } else if (nivelActual === 2) {
-            if(op==='/'){res=Math.floor(Math.random()*20)+5;t2=Math.floor(Math.random()*7)+2;t1=res*t2;}
-            else if(op==='*'){t1=Math.floor(Math.random()*12)+2;t2=Math.floor(Math.random()*11)+2;res=t1*t2;}
-            else if(op==='-'){t1=Math.floor(Math.random()*40)+10;t2=Math.floor(Math.random()*30)+5;res=t1-t2;}
-            else{t1=Math.floor(Math.random()*40)+10;t2=Math.floor(Math.random()*40)+10;res=t1+t2;}
+            if (opReal === '+') {
+                t1 = Math.floor(Math.random()*(ampliar?50:25))+1;
+                t2 = Math.floor(Math.random()*(ampliar?50:25))+1;
+                res = t1+t2;
+            } else if (opReal === '-') {
+                t1 = Math.floor(Math.random()*(ampliar?99:49))+2;
+                t2 = Math.floor(Math.random()*(t1-1))+1;
+                res = t1-t2;
+            } else if (opReal === '*') {
+                t1 = Math.floor(Math.random()*(ampliar?18:12))+1;
+                t2 = Math.floor(Math.random()*(ampliar?12:9))+1;
+                res = t1*t2;
+            } else {
+                res = Math.floor(Math.random()*(ampliar?40:20))+2;
+                t2  = Math.floor(Math.random()*(ampliar?12:8))+2;
+                t1  = res*t2;
+            }
         } else {
-            if(op==='/'){res=Math.floor(Math.random()*50)+10;t2=Math.floor(Math.random()*12)+2;t1=res*t2;}
-            else if(op==='*'){t1=Math.floor(Math.random()*25)+5;t2=Math.floor(Math.random()*15)+2;res=t1*t2;}
-            else if(op==='-'){t1=Math.floor(Math.random()*90)+50;t2=Math.floor(Math.random()*40)+10;res=t1-t2;}
-            else{t1=Math.floor(Math.random()*80)+20;t2=Math.floor(Math.random()*80)+20;res=t1+t2;}
+            if (opReal === '+') {
+                t1 = Math.floor(Math.random()*(ampliar?99:50))+1;
+                t2 = Math.floor(Math.random()*(ampliar?98:49))+1;
+                res = t1+t2;
+            } else if (opReal === '-') {
+                t1 = Math.floor(Math.random()*(ampliar?198:98))+2;
+                t2 = Math.floor(Math.random()*(t1-1))+1;
+                res = t1-t2;
+            } else if (opReal === '*') {
+                t1 = Math.floor(Math.random()*(ampliar?40:25))+1;
+                t2 = Math.floor(Math.random()*(ampliar?12:9))+1;
+                res = t1*t2;
+            } else {
+                res = Math.floor(Math.random()*(ampliar?100:50))+2;
+                t2  = Math.floor(Math.random()*(ampliar?18:11))+2;
+                t1  = res*t2;
+            }
         }
-        if (!respuestasUsadas.has(res)) { v = { t1, t2, res, op }; break; }
+
+        if (!respuestasUsadas.has(res)) {
+            v = { t1, t2, res, op: opReal };
+            break;
+        }
         intentosLoop++;
     }
-    if (!v) v = { t1:5, t2:5, res:10, op:'+' };
+
+    // Fallback de emergencia: buscar cualquier resultado no usado en rango amplio
+    if (!v) {
+        let resEmerg = 1;
+        for (let r = 2; r <= 500; r++) {
+            if (!respuestasUsadas.has(r)) { resEmerg = r; break; }
+        }
+        if (opReal === '/') {
+            // Buscar divisor que dé resultado exacto
+            let t2e = 2;
+            for (let d = 2; d <= 12; d++) {
+                if (!respuestasUsadas.has(resEmerg)) { t2e = d; break; }
+            }
+            v = { t1: resEmerg * t2e, t2: t2e, res: resEmerg, op: '/' };
+        } else if (opReal === '*') {
+            v = { t1: resEmerg, t2: 1, res: resEmerg, op: '*' };
+        } else if (opReal === '-') {
+            v = { t1: resEmerg + 1, t2: 1, res: resEmerg, op: '-' };
+        } else {
+            v = { t1: resEmerg, t2: 0, res: resEmerg, op: '+' };
+        }
+    }
+
     return v;
 }
 
 function nuevaPregunta() {
     let v = generarLogicaPregunta();
     n1 = v.t1; n2 = v.t2; resultadoCorrecto = v.res;
-    document.getElementById('pregunta-txt').innerText = `${n1} ${v.op==='*'?'×':v.op==='/'?'÷':v.op} ${n2}`;
+    // Bloquear este resultado AHORA para que no vuelva a salir aunque fallen
+    respuestasUsadas.add(resultadoCorrecto);
+    const simb = v.op === '*' ? '×' : v.op === '/' ? '÷' : v.op;
+    document.getElementById('pregunta-txt').innerText = `${n1} ${simb} ${n2}`;
     document.getElementById('input-resp').value = "";
     mostrarMensaje("", "");
     if (window.innerWidth > 600) document.getElementById('input-resp').focus();
@@ -648,18 +858,17 @@ function nuevaPregunta() {
 
 function validarLogica() {
     let input = document.getElementById('input-resp');
-    let r = Number(input.value); if (input.value === "") return;
+    let r = Number(input.value);
+    if (input.value === "") return;
     let esBien = (r === resultadoCorrecto);
     historialPreguntas.push({ txt: document.getElementById('pregunta-txt').innerText, u: r, c: resultadoCorrecto, ok: esBien });
-
     if (esBien) {
-        respuestasUsadas.add(resultadoCorrecto);
         progresoActual++;
         if (progresoActual >= metaPreguntas) {
-            detenerAudios(); sonidos.final.play();
+            detenerAudios(); try { sonidos.final.play(); } catch(e){}
             mostrarReporte("🏆 ¡EXCELENTE!");
         } else {
-            detenerAudios(); (Math.random()<0.5 ? sonidos.acierto1 : sonidos.acierto2).play();
+            detenerAudios(); try { (Math.random()<0.5?sonidos.acierto1:sonidos.acierto2).play(); } catch(e){}
             mostrarMensaje("✅ ¡BIEN!", "var(--primary)");
             setTimeout(nuevaPregunta, 400);
         }
@@ -668,8 +877,7 @@ function validarLogica() {
         document.getElementById('main-modal-content').classList.add('shake');
         setTimeout(() => document.getElementById('main-modal-content').classList.remove('shake'), 400);
         detenerAudios();
-        if (progresoActual === 0) sonidos.cero.play();
-        else (Math.random() < 0.5 ? sonidos.falla.play() : sonidos.audioError.play());
+        try { if (progresoActual===0) sonidos.cero.play(); else (Math.random()<0.5?sonidos.falla.play():sonidos.audioError.play()); } catch(e){}
         mostrarMensaje("❌ ¡ERROR!", "var(--error)");
         setTimeout(nuevaPregunta, 400);
     }
@@ -681,7 +889,47 @@ document.getElementById('input-resp').addEventListener('keydown', e => { if(e.ke
 function actualizarProgreso() {
     let p = (progresoActual / metaPreguntas) * 100;
     document.getElementById('bar').style.width = p + "%";
-    document.getElementById('contenedor-hero').style.left = (p * 0.75) + "%";
+    // Mover el wrapper que contiene círculo + emoji
+    const wrapper = document.getElementById('hero-wrapper');
+    if (wrapper) wrapper.style.left = (p * 0.75) + "%";
+    actualizarEstadoHeroe();
+}
+
+// ─── SISTEMA DE ESTADOS DEL HÉROE ──────────────────────────────────────────
+function actualizarEstadoHeroe() {
+    const contenedor = document.getElementById('contenedor-hero');
+    const emojiEl    = document.getElementById('hero-emoji');
+    const timerEl    = document.getElementById('timer-display');
+    if (!contenedor) return;
+
+    const pctProgreso     = metaPreguntas > 0 ? progresoActual / metaPreguntas : 0;
+    const pctTiempo       = tiempoInicial  > 0 ? tiempoRestante / tiempoInicial : 1;
+    const tiempoConsumido = 1 - pctTiempo;
+    const ventaja         = pctProgreso - tiempoConsumido;
+
+    const tiempoMuyPoco  = pctTiempo < 0.12;
+    const tiempoCritico  = pctTiempo < 0.28 && pctProgreso < 0.55;
+
+    let estado, emoji;
+    if (tiempoMuyPoco || (tiempoCritico && ventaja < -0.28)) {
+        estado = 'peligro';   emoji = '😱';
+    } else if (pctTiempo < 0.38 || ventaja < -0.22) {
+        estado = 'nervioso';  emoji = '😰';
+    } else if (ventaja > 0.18 || pctProgreso > 0.65) {
+        estado = 'feliz';     emoji = '😄';
+    } else {
+        estado = 'normal';    emoji = '😊';
+    }
+
+    contenedor.classList.remove('estado-feliz','estado-normal','estado-nervioso','estado-peligro');
+    contenedor.classList.add('estado-' + estado);
+    if (emojiEl) emojiEl.innerText = emoji;
+
+    if (timerEl) {
+        timerEl.classList.remove('timer-peligro','timer-nervioso');
+        if (estado === 'peligro')  timerEl.classList.add('timer-peligro');
+        else if (estado === 'nervioso') timerEl.classList.add('timer-nervioso');
+    }
 }
 
 function iniciarCronometro() {
@@ -690,48 +938,94 @@ function iniciarCronometro() {
         tiempoRestante--;
         let m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
         document.getElementById('timer-display').innerText = `${m}:${s<10?'0'+s:s}`;
+        actualizarEstadoHeroe(); // actualizar estado en cada tick
         if (tiempoRestante <= 0) { clearInterval(intervaloSegundos); mostrarReporte("⏰ TIEMPO AGOTADO"); }
     }, 1000);
 }
 
+function mostrarMensaje(t, c) {
+    let m = document.getElementById('mensaje-modal'); m.innerText = t; m.style.color = c;
+}
+
+// =====================================================
+// REPORTE
+// =====================================================
 function mostrarReporte(t) {
     clearInterval(intervaloSegundos);
     const nombre = (localStorage.getItem('jugadorActual') || "HEROE").toUpperCase();
     let tiempoUsado = tiempoInicial - tiempoRestante;
     let aciertos = historialPreguntas.filter(p => p.ok).length;
-    let fallos    = historialPreguntas.length - aciertos;
-    let completo  = (t !== "⏰ TIEMPO AGOTADO" && progresoActual >= metaPreguntas);
+    let fallos   = historialPreguntas.length - aciertos;
+    let completo = (t !== "⏰ TIEMPO AGOTADO" && progresoActual >= metaPreguntas);
 
-    // Guardar en localStorage
-    registrarPartida(nivelActual, faseActual, tiempoUsado, aciertos, fallos, completo);
+    registrarPartida(nivelActual, faseActual, operacionElegida, tiempoUsado, aciertos, fallos, completo);
 
     document.getElementById('game-area').style.display = 'none';
     document.getElementById('report-area').style.display = 'block';
 
-    let desbloqueoMsg = "";
-    let hayFaseSiguiente = completo && faseActual < 3;
-    if (hayFaseSiguiente) {
-        const nuevaFase = configFases[faseActual + 1];
-        desbloqueoMsg = `<br><span style="color:var(--primary)">🔓 ¡NUEVA FASE DESBLOQUEADA: NIVEL ${nivelActual}${nuevaFase.suffix} — ${nuevaFase.time}s!</span>`;
-    }
-
     const cf = configFases[faseActual];
-    document.getElementById('report-title').innerHTML = `${nombre}, NIVEL ${nivelActual}${cf.suffix}`;
-    document.getElementById('tiempo-logrado').innerHTML = `⏱️ Tiempo: ${tiempoUsado}s de ${tiempoInicial}s | ✅ ${aciertos} | ❌ ${fallos} ${desbloqueoMsg}`;
+    document.getElementById('report-title').innerHTML = `${nombre} — Nivel ${nivelActual}${cf.suffix}`;
 
-    let obsTxt = "";
-    if (fallos === 0) obsTxt = "✨ ¡EXCELENTE! Eres un genio.";
-    else if (aciertos > fallos) obsTxt = "👍 ¡BIEN! Sigue mejorando.";
-    else obsTxt = "💪 ¡TÚ PUEDES! No te rindas.";
+    // Llenar resumen
+    document.getElementById('rep-buenas').innerText = aciertos;
+    document.getElementById('rep-malas').innerText  = fallos;
+    document.getElementById('rep-tiempo').innerText = `${tiempoUsado}s`;
+    document.getElementById('rep-tiempo-total').innerText = `de ${tiempoInicial}s`;
 
-    document.getElementById('observaciones-area').innerText = obsTxt;
-    document.getElementById('report-body').innerHTML = historialPreguntas.map(i =>
-        `<tr><td>${i.txt}</td><td style="color:${i.ok?'green':'red'}">${i.u}</td><td>${i.c}</td></tr>`
-    ).join('');
+    // Barras de puntos (una por pregunta, verde/rojo, altura variable)
+    const filaP = document.getElementById('rep-puntos-fila');
+    filaP.innerHTML = '';
+    let racha = 0;
+    historialPreguntas.forEach((h, i) => {
+        if (h.ok) racha = Math.min(racha + 1, 4); else racha = 0;
+        const alt = h.ok ? Math.min(20 + racha * 7, 44) : 20;
+        const b = document.createElement('div');
+        b.style.cssText = `width:12px; height:${alt}px; border-radius:3px; flex-shrink:0;
+            background:${h.ok ? '#4CAF50' : '#F44336'}; cursor:default;`;
+        b.title = `#${i+1}: ${h.txt} → ${h.u}`;
+        filaP.appendChild(b);
+    });
 
-    // Botón: si completó y hay fase siguiente → "Continuar", si no → "Volver"
+    // Observación
+    const obsEl = document.getElementById('observaciones-area');
+    obsEl.style.cssText = 'background:#f9f9f9; border-left:5px solid var(--secondary); padding:8px 12px; font-style:italic; color:#444; text-align:center; border-radius:5px;';
+    obsEl.innerText = fallos===0 ? "✨ ¡EXCELENTE! Eres un genio." : aciertos>fallos ? "👍 ¡BIEN! Sigue mejorando." : "💪 ¡TÚ PUEDES! No te rindas.";
+
+    // Mensajes de desbloqueo
+    let desbloqueoHtml = "";
+    if (completo && faseActual < 3 && faseDesbloqueadaParaOp(nivelActual, faseActual + 1, esModoSkull, operacionElegida)) {
+        const nf = configFases[faseActual + 1];
+        desbloqueoHtml += `<span style="color:var(--primary)">🔓 ¡Fase ${nivelActual}${nf.suffix} desbloqueada para ${OPNAMES[operacionElegida]}!</span><br>`;
+    }
+    if (nivelActual < 3) {
+        const prog2 = cargarProgreso();
+        const opsFalt = OPERACIONES_NORMALES.filter(op =>
+            !configFases.every((_, fi) => { const k = claveP(nivelActual, fi, esModoSkull, op); return prog2[k] && prog2[k].superado; })
+        );
+        if (opsFalt.length === 0) desbloqueoHtml += `<span style="color:#9C27B0">🎉 ¡NIVEL ${nivelActual+1} DESBLOQUEADO!</span>`;
+    }
+    document.getElementById('desbloqueo-msg').innerHTML = desbloqueoHtml;
+
+    // ── TABLA DE PREGUNTAS — exactamente como la imagen ──────────────
+    // Solo mostramos las preguntas CORRECTAS en la tabla (las que el niño respondió bien)
+    // Las incorrectas se ven en las barras de color rojo arriba
+    const tbody = document.getElementById('report-body');
+    tbody.innerHTML = historialPreguntas.map((h, i) => {
+        const bgRow  = i % 2 === 0 ? 'white' : '#fafafa';
+        const colorTu = h.ok ? '#4CAF50' : '#F44336';
+        const checkCol = h.ok
+            ? `<td style="padding:9px 8px; text-align:center; color:#4CAF50; font-weight:bold;">${h.c}</td>`
+            : `<td style="padding:9px 8px; text-align:center; color:#bbb;">${h.c}</td>`;
+        return `<tr style="background:${bgRow}; border-bottom:1px solid #f0f0f0;">
+            <td style="padding:9px 14px; text-align:left; color:#333; font-weight:500;">${h.txt}</td>
+            <td style="padding:9px 8px; text-align:center; color:${colorTu}; font-weight:bold;">${h.u}</td>
+            ${checkCol}
+        </tr>`;
+    }).join('');
+
     const btnVolver = document.getElementById('btn-volver-reporte');
-    if (hayFaseSiguiente) {
+    const hayFaseSig = completo && faseActual < 3 && faseDesbloqueadaParaOp(nivelActual, faseActual + 1, esModoSkull, operacionElegida);
+    if (hayFaseSig) {
         const sigFase = configFases[faseActual + 1];
         btnVolver.innerText = `▶ Continuar a Nivel ${nivelActual}${sigFase.suffix}`;
         btnVolver.style.background = 'var(--secondary)';
@@ -744,25 +1038,16 @@ function mostrarReporte(t) {
 }
 
 function continuarSiguienteFase() {
-    // Avanzar a la siguiente fase con la misma operación
     faseActual++;
-    progresoActual = 0;
-    historialPreguntas = [];
-    respuestasUsadas.clear();
-
+    progresoActual = 0; historialPreguntas = []; respuestasUsadas.clear();
     const config = configFases[faseActual];
-    tiempoInicial = config.time;
-    tiempoRestante = tiempoInicial;
+    tiempoInicial = config.time; tiempoRestante = tiempoInicial;
     metaPreguntas = nivelActual * 10;
-
     document.getElementById('game-area').style.display = 'block';
     document.getElementById('report-area').style.display = 'none';
     document.getElementById('bar').style.width = '0%';
     document.getElementById('contenedor-hero').style.left = '0%';
-
-    actualizarProgreso();
-    nuevaPregunta();
-    iniciarCronometro();
+    actualizarProgreso(); nuevaPregunta(); iniciarCronometro();
 }
 
 function cerrarJuego() {
@@ -770,45 +1055,256 @@ function cerrarJuego() {
     document.getElementById('modal').style.display = 'none';
 }
 
-function mostrarMensaje(t, c) {
-    let m = document.getElementById('mensaje-modal'); m.innerText = t; m.style.color = c;
+// =====================================================
+// PANEL DE PROGRESO (modal 📊)
+// Acordeón por NIVEL → dentro, sub-acordeón por FASE
+// =====================================================
+function crearBloqueNivel(prog, nivel, skull) {
+    const id = 'pm_n' + nivel + (skull ? 's' : 'n');
+    const icono = skull ? '💀' : '⭐';
+
+    // Contar superadas (max 16)
+    let superadas = 0;
+    OPERACIONES_NORMALES.forEach(op => configFases.forEach((_, fi) => {
+        const k = claveP(nivel, fi, skull, op);
+        if (prog[k] && prog[k].superado) superadas++;
+    }));
+
+    // Barra de progreso visual (0–16)
+    const pct = Math.round((superadas / 16) * 100);
+    const headerColor = skull ? '#1a1a1a' : '#4CAF50';
+    const headerTextColor = skull ? '#FFD700' : 'white';
+
+    const bloque = document.createElement('div');
+    bloque.className = 'prog-nivel-bloque';
+    bloque.style.border = '2px solid ' + (skull ? '#333' : '#d4edda');
+
+    // ─── CABECERA NIVEL (clic para abrir/cerrar) ───────────────────────
+    const header = document.createElement('button');
+    header.style.cssText = `
+        width:100%; display:flex; align-items:center; justify-content:space-between;
+        background:${headerColor}; color:${headerTextColor}; border:none; cursor:pointer;
+        padding:10px 14px; font-size:0.95rem; font-weight:bold; gap:10px;`;
+    header.onclick = () => toggleProgAcordeon(id);
+
+    const progBarHtml = `
+        <div style="flex:1; background:rgba(255,255,255,0.25); border-radius:20px; height:6px; margin:0 8px;">
+            <div style="width:${pct}%; background:white; height:6px; border-radius:20px; transition:width 0.4s;"></div>
+        </div>`;
+    header.innerHTML = `
+        <span>${icono} Nivel ${nivel}${skull ? ' 💀' : ''}</span>
+        ${progBarHtml}
+        <span style="white-space:nowrap;font-size:0.82rem;opacity:0.9">${superadas}/16</span>
+        <span id="${id}_flecha" style="font-size:0.9rem">▼</span>`;
+
+    // ─── CUERPO NIVEL (oculto por defecto) ────────────────────────────
+    const body = document.createElement('div');
+    body.id = id + '_body';
+    body.style.display = 'none';
+    body.style.background = '#fafafa';
+
+    // ─── SUB-ACORDEÓN POR FASE ────────────────────────────────────────
+    configFases.forEach((cf, fi) => {
+        // ¿Hay al menos una op disponible en esta fase?
+        const hayAlgunaOp = OPERACIONES_NORMALES.some(op => faseDesbloqueadaParaOp(nivel, fi, skull, op));
+        if (!hayAlgunaOp && fi > 0) return;
+
+        const faseId = id + '_f' + fi;
+
+        // Contar ops superadas en esta fase
+        let opsSup = OPERACIONES_NORMALES.filter(op => {
+            const k = claveP(nivel, fi, skull, op);
+            return prog[k] && prog[k].superado;
+        }).length;
+        let opsDisp = OPERACIONES_NORMALES.filter(op => faseDesbloqueadaParaOp(nivel, fi, skull, op)).length;
+        const faseCompleta = (opsSup === 4);
+        const faseColor = faseCompleta ? '#e8f5e9' : (opsSup > 0 ? '#fff8e1' : '#f5f5f5');
+        const faseBorde = faseCompleta ? '#a5d6a7' : (opsSup > 0 ? '#ffe082' : '#e0e0e0');
+
+        // Cabecera de fase
+        const faseHeader = document.createElement('button');
+        faseHeader.style.cssText = `
+            width:100%; display:flex; align-items:center; justify-content:space-between;
+            background:${faseColor}; border:none; border-top:1px solid ${faseBorde};
+            cursor:pointer; padding:8px 14px; font-size:0.85rem; font-weight:bold; color:#444;`;
+        faseHeader.onclick = () => toggleFaseProgreso(faseId);
+
+        // Píldoras de estado rápido
+        const pillsHtml = OPERACIONES_NORMALES.map(op => {
+            const k = claveP(nivel, fi, skull, op);
+            const d = prog[k];
+            const disp = faseDesbloqueadaParaOp(nivel, fi, skull, op);
+            if (!disp) return `<span style="font-size:13px;opacity:0.3">🔒</span>`;
+            if (!d || !d.partidas) return `<span style="font-size:13px;opacity:0.4">${OPSIMBOLO[op]}</span>`;
+            return d.superado
+                ? `<span style="font-size:13px" title="${OPNAMES[op]}">✅</span>`
+                : `<span style="font-size:13px" title="${OPNAMES[op]}">🔥</span>`;
+        }).join('');
+
+        faseHeader.innerHTML = `
+            <span>Nivel ${nivel}${cf.suffix} — <span style="color:#888;font-weight:normal">${cf.time}s</span></span>
+            <div style="display:flex;gap:6px;align-items:center">${pillsHtml}<span id="${faseId}_flecha" style="margin-left:6px;font-size:0.8rem;color:#aaa">▼</span></div>`;
+
+        // Cuerpo de fase (oculto por defecto)
+        const faseBody = document.createElement('div');
+        faseBody.id = faseId + '_body';
+        faseBody.style.display = 'none';
+
+        // Grid 4 tarjetitas
+        const grid = document.createElement('div');
+        grid.style.cssText = 'display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:10px 12px 12px;';
+
+        OPERACIONES_NORMALES.forEach(op => {
+            const k = claveP(nivel, fi, skull, op);
+            const d = prog[k];
+            const disp = faseDesbloqueadaParaOp(nivel, fi, skull, op);
+
+            const card = document.createElement('div');
+            card.style.cssText = `
+                background:white; border-radius:10px; padding:8px 4px; text-align:center;
+                border:2px solid #eee; font-size:0.72rem;`;
+
+            if (!disp) {
+                card.style.background = '#f5f5f5';
+                card.style.opacity = '0.5';
+                card.innerHTML = `<div style="font-size:1.3rem">${OPSIMBOLO[op]}</div>
+                    <div style="color:#bbb;margin-top:2px">🔒</div>`;
+            } else if (!d || !d.partidas) {
+                card.style.borderColor = '#e0e0e0';
+                card.innerHTML = `<div style="font-size:1.3rem">${OPSIMBOLO[op]}</div>
+                    <div style="color:#aaa;margin-top:2px;font-size:0.7rem">Sin jugar</div>`;
+            } else if (d.superado) {
+                card.style.borderColor = '#4CAF50';
+                card.style.background = '#f1fff3';
+                // Barra: aciertos vs fallos acumulados
+                const tot = d.aciertos + d.fallos;
+                const pctB = tot > 0 ? Math.round((d.aciertos/tot)*100) : 0;
+                card.innerHTML = `
+                    <div style="font-size:1.3rem">${OPSIMBOLO[op]}</div>
+                    <div style="color:#4CAF50;font-weight:bold;font-size:0.9rem">✅</div>
+                    <div style="margin:4px 0 2px;background:#eee;border-radius:4px;height:5px;overflow:hidden">
+                        <div style="width:${pctB}%;background:#4CAF50;height:5px;border-radius:4px"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:0 2px">
+                        <span style="color:#4CAF50;font-weight:bold">${d.aciertos}✓</span>
+                        <span style="color:#F44336">${d.fallos}✗</span>
+                    </div>
+                    ${d.mejorTiempo ? `<div style="color:#888;margin-top:2px">⏱️${d.mejorTiempo}s</div>` : ''}`;
+            } else {
+                card.style.borderColor = '#FF9800';
+                card.style.background = '#fffde7';
+                const tot = d.aciertos + d.fallos;
+                const pctB = tot > 0 ? Math.round((d.aciertos/tot)*100) : 0;
+                card.innerHTML = `
+                    <div style="font-size:1.3rem">${OPSIMBOLO[op]}</div>
+                    <div style="color:#FF9800;font-weight:bold;font-size:0.9rem">🔥</div>
+                    <div style="margin:4px 0 2px;background:#eee;border-radius:4px;height:5px;overflow:hidden">
+                        <div style="width:${pctB}%;background:#4CAF50;height:5px;border-radius:4px"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:0 2px">
+                        <span style="color:#4CAF50;font-weight:bold">${d.aciertos}✓</span>
+                        <span style="color:#F44336">${d.fallos}✗</span>
+                    </div>
+                    <div style="color:#888;margin-top:2px">${d.partidas} vez</div>`;
+            }
+            grid.appendChild(card);
+        });
+
+        faseBody.appendChild(grid);
+
+        // ── TABLA Reto|Tú|✓ — última partida de cada operación ──────────
+        const hist = cargarHistorial();
+        OPERACIONES_NORMALES.forEach((op, opIdx) => {
+            const k = claveP(nivel, fi, skull, op);
+            const d = prog[k];
+            if (!d || !d.partidas) return;
+
+            // Última partida de esta op/fase con preguntas guardadas
+            const partidasOp = hist.filter(h =>
+                h.nivel === nivel && h.faseIndex === fi &&
+                h.skull === skull && h.op === op && h.pregs && h.pregs.length > 0
+            );
+            if (partidasOp.length === 0) return;
+
+            const ultima = partidasOp[partidasOp.length - 1];
+            const fecha = new Date(ultima.ts).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+            const tablaId = `tabla_${faseId}_op${opIdx}`;
+
+            // Hacer la tarjetita clicable para mostrar/ocultar la tabla
+            const card = grid.children[opIdx];
+            if (card) {
+                card.style.cursor = 'pointer';
+                card.title = 'Toca para ver detalle';
+                card.onclick = () => {
+                    const t = document.getElementById(tablaId);
+                    if (!t) return;
+                    const vis = t.style.display !== 'none';
+                    t.style.display = vis ? 'none' : 'block';
+                    card.style.outline = vis ? 'none' : '2px solid #4CAF50';
+                };
+            }
+
+            let filasHtml = ultima.pregs.map((p, i) => {
+                const bg = i % 2 === 0 ? 'white' : '#fafafa';
+                const colorTu = p.ok ? '#4CAF50' : '#F44336';
+                const iconoOk = p.ok
+                    ? `<td style="padding:8px 10px; text-align:center; color:#4CAF50; font-weight:bold; font-size:0.9rem;">${p.c}</td>`
+                    : `<td style="padding:8px 10px; text-align:center; color:#F44336; font-weight:bold; font-size:0.9rem;">${p.c}</td>`;
+                return `<tr style="background:${bg}; border-bottom:1px solid #f0f0f0;">
+                    <td style="padding:8px 14px; text-align:left; color:#333; font-size:0.88rem; font-weight:500;">${p.txt}</td>
+                    <td style="padding:8px 10px; text-align:center; color:${colorTu}; font-weight:bold; font-size:0.88rem;">${p.ok ? p.u : `<s style="color:#F44336">${p.u}</s>`}</td>
+                    ${iconoOk}
+                </tr>`;
+            }).join('');
+
+            const opDiv = document.createElement('div');
+            opDiv.id = tablaId;
+            opDiv.style.display = 'none'; // oculta hasta que toquen la tarjetita
+            opDiv.style.cssText += 'margin:0 10px 12px; border-radius:10px; border:1.5px solid #e0e0e0; overflow:hidden;';
+            opDiv.innerHTML = `
+                <div style="background:#f0f0f0; padding:7px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                    <span style="font-weight:bold; font-size:0.82rem; color:#444;">${OPSIMBOLO[op]} ${OPNAMES[op]}</span>
+                    <span style="font-size:0.75rem; color:#555;">✅ ${ultima.aciertos} &nbsp; ❌ ${ultima.fallos} &nbsp; ⏱️ ${ultima.tiempoUsado}s</span>
+                    <span style="font-size:0.68rem; color:#aaa; width:100%;">${fecha}</span>
+                </div>
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f8f8f8; border-bottom:1.5px solid #e8e8e8;">
+                            <th style="padding:7px 14px; text-align:left; color:#999; font-size:0.75rem; font-weight:600;">Reto</th>
+                            <th style="padding:7px 10px; text-align:center; color:#999; font-size:0.75rem; font-weight:600;">Tú</th>
+                            <th style="padding:7px 10px; text-align:center; color:#999; font-size:0.75rem; font-weight:600;">✓</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filasHtml}</tbody>
+                </table>`;
+            faseBody.appendChild(opDiv);
+        });
+
+        body.appendChild(faseHeader);
+        body.appendChild(faseBody);
+    });
+
+    bloque.appendChild(header);
+    bloque.appendChild(body);
+    return bloque;
 }
 
-// =====================================================
-// PANEL DE PROGRESO
-// =====================================================
-function crearGrupoNivel(prog, nivel, skull) {
-    const grupo = document.createElement('div');
-    grupo.className = 'prog-nivel-grupo';
-    const icono = skull ? '💀' : '⭐';
-    const estilo = skull ? 'background:#222; color:#ffeb3b;' : '';
-    grupo.innerHTML = `<div class="prog-nivel-header" style="${estilo}">${icono} Nivel ${nivel}${skull ? ' 💀' : ''}</div>`;
+function toggleProgAcordeon(id) {
+    const body   = document.getElementById(id + '_body');
+    const flecha = document.getElementById(id + '_flecha');
+    if (!body) return;
+    const abierto = body.style.display !== 'none';
+    body.style.display = abierto ? 'none' : 'block';
+    if (flecha) flecha.innerText = abierto ? '▼' : '▲';
+}
 
-    const header = document.createElement('div');
-    header.className = 'prog-header-cols';
-    header.innerHTML = `<span>Fase</span><span>Partidas</span><span>Aciertos/Fallos</span><span>Récord</span>`;
-    grupo.appendChild(header);
-
-    configFases.forEach((cf, i) => {
-        const k = claveProgreso(nivel, i, skull);
-        const datos = prog[k];
-        const row = document.createElement('div');
-        row.className = 'prog-fase-row';
-        if (!datos || !datos.desbloqueado) {
-            row.innerHTML = `<span class="label" style="color:#bbb">Nivel ${nivel}${cf.suffix}</span><span class="val" style="color:#ddd">🔒 Bloqueada</span><span></span><span></span>`;
-        } else {
-            const record = datos.mejorTiempo !== null ? `${datos.mejorTiempo}s` : '—';
-            const acFal  = `${datos.aciertos}✅ / ${datos.fallos}❌`;
-            row.innerHTML = `
-                <span class="label">Nivel ${nivel}${cf.suffix}</span>
-                <span class="val">${datos.partidas}</span>
-                <span class="val">${acFal}</span>
-                <span class="val record">${record}</span>
-            `;
-        }
-        grupo.appendChild(row);
-    });
-    return grupo;
+function toggleFaseProgreso(faseId) {
+    const body   = document.getElementById(faseId + '_body');
+    const flecha = document.getElementById(faseId + '_flecha');
+    if (!body) return;
+    const abierto = body.style.display !== 'none';
+    body.style.display = abierto ? 'none' : 'block';
+    if (flecha) flecha.innerText = abierto ? '▼' : '▲';
 }
 
 function abrirModalProgreso() {
@@ -816,34 +1312,24 @@ function abrirModalProgreso() {
     const cont = document.getElementById('progreso-contenido');
     cont.innerHTML = '';
 
-    // Título sección normal
-    const tituloNormal = document.createElement('div');
-    tituloNormal.style = 'font-weight:bold; color:#555; margin:10px 0 5px; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;';
-    tituloNormal.innerText = '⭐ Modo Normal';
-    cont.appendChild(tituloNormal);
+    const tN = document.createElement('div');
+    tN.style.cssText = 'font-weight:bold;color:#555;margin:6px 0 8px;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;';
+    tN.innerText = '⭐ Modo Normal';
+    cont.appendChild(tN);
+    [1,2,3].forEach(n => cont.appendChild(crearBloqueNivel(prog, n, false)));
 
-    [1, 2, 3].forEach(nivel => {
-        cont.appendChild(crearGrupoNivel(prog, nivel, false));
-    });
-
-    // Separador skull
-    const tituloSkull = document.createElement('div');
-    tituloSkull.style = 'font-weight:bold; color:#ffeb3b; background:#222; padding:6px 10px; border-radius:8px; margin:15px 0 5px; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;';
-    tituloSkull.innerText = '💀 Modo Calavera';
-    cont.appendChild(tituloSkull);
-
-    [1, 2, 3].forEach(nivel => {
-        cont.appendChild(crearGrupoNivel(prog, nivel, true));
-    });
+    const tS = document.createElement('div');
+    tS.style.cssText = 'font-weight:bold;color:#ffeb3b;background:#222;padding:6px 10px;border-radius:8px;margin:14px 0 8px;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;';
+    tS.innerText = '💀 Modo Calavera';
+    cont.appendChild(tS);
+    [1,2,3].forEach(n => cont.appendChild(crearBloqueNivel(prog, n, true)));
 
     document.getElementById('modal-progreso').style.display = 'flex';
     history.pushState(null, '', window.location.href);
 }
 
 function cerrarModalProgreso(e) {
-    if (e.target === document.getElementById('modal-progreso')) {
-        document.getElementById('modal-progreso').style.display = 'none';
-    }
+    if (e.target === document.getElementById('modal-progreso')) document.getElementById('modal-progreso').style.display = 'none';
 }
 </script>
 </body>
