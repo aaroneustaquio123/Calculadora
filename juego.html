@@ -22,10 +22,11 @@
             overflow: hidden;
         }
         #btn-progreso {
-            position: fixed; top: 12px; right: 12px; z-index: 500;
-            background: white; border: 3px solid var(--primary); border-radius: 50%;
+            position: absolute; top: 10px; right: 10px; z-index: 50;
+            background: white; border: 2px solid var(--primary);
+            border-radius: 50%;
             width: 52px; height: 52px; font-size: 24px; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12); display: flex;
             align-items: center; justify-content: center; transition: 0.2s; padding: 0;
         }
         #btn-progreso:active { transform: scale(0.92); }
@@ -142,7 +143,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 800;
         }
-        #modal-fase .contenido { background: white; width: 90%; max-width: 360px; border-radius: 20px; padding: 25px 20px; text-align: center; }
+        #modal-fase .contenido { background: white; width: 92%; max-width: 400px; border-radius: 20px; padding: 20px 16px; text-align: center; max-height: 88vh; overflow-y: auto; }
         #modal-fase h3 { margin: 0 0 18px 0; font-size: 1.2rem; color: #333; }
         .btn-fase-opcion {
             display: block; width: 100%; margin: 8px 0; padding: 14px;
@@ -291,10 +292,23 @@
         .shake { animation: shake 0.4s; border: 3px solid var(--error); }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } }
 
-        #timer-display { font-size: 22px; font-weight: bold; color: #444; background: #f8f8f8; padding: 5px 20px; border-radius: 30px; display: inline-block; border: 1px solid #eee; margin-bottom: 15px; }
-        .pista-progreso { width: 100%; height: 140px; background: #f1f1f1; border-radius: 15px; position: relative; margin: 15px 0; border-bottom: 5px solid #ccc; overflow: visible; }
-        .personaje-movil { position: absolute; bottom: 10px; left: 0%; width: 100px; height: 100px; background: white; border-radius: 50%; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; display: flex; justify-content: center; align-items: center; transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .pista-progreso { width: 100%; height: 130px; background: #f1f1f1; border-radius: 15px; position: relative; margin: 8px 0 4px 0; border-bottom: 5px solid #ccc; overflow: hidden; }
+        .personaje-movil { position: absolute; bottom: 18px; left: 0%; width: 90px; height: 90px; background: white; border-radius: 50%; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; display: flex; justify-content: center; align-items: center; transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
         .personaje-movil img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* ── BARRA DE 6 INTERVALOS DE TIEMPO ── */
+        #intervalos-tiempo {
+            position: absolute; top: 0; left: 0; right: 0;
+            display: flex; gap: 3px; padding: 6px 8px 0;
+            z-index: 5; pointer-events: none; height: 22px;
+        }
+        .bloque-intervalo {
+            flex: 1; height: 14px; border-radius: 5px;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform-origin: top center;
+        }
+        .bloque-intervalo.activo   { opacity: 1;    transform: scaleY(1); }
+        .bloque-intervalo.consumido{ opacity: 0.15; transform: scaleY(0.4); }
         .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
         .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: 0.4s; }
         #pregunta-txt { font-size: 50px; font-weight: bold; color: #222; margin: 15px 0; }
@@ -327,11 +341,10 @@
 </head>
 <body>
 
-<button id="btn-progreso" onclick="abrirModalProgreso()" title="Ver mi progreso">📊</button>
-
 <h1 id="mensaje-bienvenida">HOLA...</h1>
 
 <div class="main-menu">
+    <button id="btn-progreso" onclick="abrirModalProgreso()" title="Ver mi progreso">📊</button>
     <h1>🎯 MateKids PRO</h1>
     <p style="margin-bottom: 5px;">👤 Elige a tu Personaje</p>
     <div class="selector-container">
@@ -351,18 +364,6 @@
         <button id="n3k" class="btn-level btn-skull" onclick="abrirSelectorFase(3, true)">Nivel 3 💀</button>
     </div>
 
-    <h3>Operación</h3>
-    <div id="ops-normal">
-        <button class="btn-op" onclick="abrirJuego('+')">+</button>
-        <button class="btn-op" onclick="abrirJuego('-')">-</button>
-        <button class="btn-op" onclick="abrirJuego('*')">×</button>
-        <button class="btn-op" onclick="abrirJuego('/')">÷</button>
-    </div>
-    <div id="ops-skull" style="display:none">
-        <button class="btn-op" style="width:auto; background:#000; padding:10px 20px;" onclick="abrirJuego('?')">DESAFÍO ALEATORIO 💀</button>
-    </div>
-</div>
-
 <!-- MODAL JUEGO -->
 <div id="modal" class="modal-overlay">
     <div class="modal-content" id="main-modal-content">
@@ -370,7 +371,13 @@
         <div id="game-area">
             <div id="timer-display">00:00</div>
             <div class="pista-progreso">
-                <div id="hero-wrapper" style="position:absolute; bottom:10px; left:0%; transition: left 0.8s cubic-bezier(0.4,0,0.2,1);">
+                <!-- 6 intervalos de tiempo en la parte inferior de la pista -->
+                <div id="intervalos-tiempo" style="
+                    position:absolute; bottom:0; left:0; right:0;
+                    display:flex; gap:3px; padding:0 6px 6px 6px;
+                    z-index:5; pointer-events:none;">
+                </div>
+                <div id="hero-wrapper" style="position:absolute; bottom:18px; left:0%; transition: left 0.8s cubic-bezier(0.4,0,0.2,1);">
                     <div id="contenedor-hero" class="personaje-movil estado-normal" style="position:relative; left:0; bottom:0; transition:none;">
                         <img id="status-img" src="IMAGENES/deku.jpeg" onerror="this.src='https://placehold.co/100x100/4CAF50/white?text=HRO'">
                         <div id="hero-damage-overlay"></div>
@@ -378,6 +385,7 @@
                     <div id="hero-emoji" style="position:absolute; bottom:-8px; right:-8px; font-size:32px; z-index:10; pointer-events:none; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.6)); line-height:1;">😊</div>
                 </div>
             </div>
+            <!-- Barra de progreso de preguntas (verde, debajo de la pista) -->
             <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
             <div id="pregunta-txt">---</div>
             <input type="number" id="input-resp" placeholder="?" inputmode="numeric">
@@ -656,39 +664,127 @@ function abrirSelectorFase(n, skull) {
     nivelActual = n; esModoSkull = skull;
     document.querySelectorAll('.btn-level').forEach(b => b.classList.remove('activo'));
     document.getElementById(skull ? `n${n}k` : `n${n}`).classList.add('activo');
-    document.getElementById('ops-normal').style.display = skull ? 'none' : 'block';
-    document.getElementById('ops-skull').style.display  = skull ? 'block' : 'none';
 
     const prog = cargarProgreso();
-    document.getElementById('titulo-selector-fase').innerText = `Nivel ${n} — Elige tu fase`;
+    document.getElementById('titulo-selector-fase').innerText = `Nivel ${n} — Elige fase y operación`;
     const cont = document.getElementById('opciones-fase');
     cont.innerHTML = '';
 
     configFases.forEach((cf, i) => {
-        // Mostrar la fase si AL MENOS UNA operación la tiene disponible (desbloqueada)
         const opsDisponibles = OPERACIONES_NORMALES.filter(op => faseDesbloqueadaParaOp(n, i, skull, op));
         if (opsDisponibles.length === 0 && i > 0) return;
 
-        const btn = document.createElement('button');
-        btn.className = 'btn-fase-opcion' + (i === faseActual ? ' activa' : '');
+        const esFaseActual = (i === faseActual);
+        const card = document.createElement('div');
+        card.style.cssText = `
+            background: ${esFaseActual ? '#e8f5e9' : 'white'};
+            border: 2px solid ${esFaseActual ? '#4CAF50' : '#eee'};
+            border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;`;
 
-        // Pills de estado por operación
-        const pillsHtml = OPERACIONES_NORMALES.map(op => {
-            const k = claveP(n, i, skull, op);
-            const d = prog[k];
-            const disponible = faseDesbloqueadaParaOp(n, i, skull, op);
-            if (!disponible) return `<span class="op-pill locked">${OPSIMBOLO[op]} 🔒</span>`;
-            if (!d || d.partidas === 0) return `<span class="op-pill wip">${OPSIMBOLO[op]} —</span>`;
-            if (d.superado) return `<span class="op-pill ok">${OPSIMBOLO[op]} ✅ ${d.mejorTiempo ? d.mejorTiempo+'s':''}</span>`;
-            return `<span class="op-pill wip">${OPSIMBOLO[op]} 🔥${d.partidas}x</span>`;
-        }).join('');
+        // ── Título + tiempo ──────────────────────────────────
+        const titulo = document.createElement('div');
+        titulo.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;';
+        titulo.innerHTML = `
+            <span style="font-weight:800; font-size:1rem; color:#333;">
+                Nivel ${n}${cf.suffix}
+            </span>
+            <span style="font-size:0.82rem; color:#888; font-weight:600;">⏱️ ${cf.time}s</span>`;
+        card.appendChild(titulo);
 
-        btn.innerHTML = `<strong>Nivel ${n}${cf.suffix}</strong> — ${cf.time}s<div class="op-pills">${pillsHtml}</div>`;
-        btn.onclick = () => {
-            faseActual = i;
-            document.getElementById('modal-fase').style.display = 'none';
-        };
-        cont.appendChild(btn);
+        // ── Barra de 6 intervalos ─────────────────────────────
+        const intervalo = cf.time / 6;
+        const barraWrap = document.createElement('div');
+        barraWrap.style.cssText = 'display:flex; gap:3px; margin-bottom:10px; align-items:center;';
+        for (let seg = 0; seg < 6; seg++) {
+            const bloque = document.createElement('div');
+            // Color según posición: verde al inicio → amarillo → naranja → rojo al final
+            const pct = seg / 5;
+            let color;
+            if (pct < 0.34)      color = '#4CAF50';
+            else if (pct < 0.67) color = '#FFB74D';
+            else                 color = '#F44336';
+            bloque.style.cssText = `
+                flex:1; height:10px; border-radius:4px;
+                background:${color}; opacity:0.85;`;
+            bloque.title = `${Math.round(intervalo * seg)}s — ${Math.round(intervalo * (seg+1))}s`;
+            barraWrap.appendChild(bloque);
+        }
+        // Etiquetas de tiempo debajo de la barra
+        const etiquetasWrap = document.createElement('div');
+        etiquetasWrap.style.cssText = 'display:flex; justify-content:space-between; font-size:0.6rem; color:#bbb; margin-bottom:10px; padding:0 1px;';
+        etiquetasWrap.innerHTML = `<span>0s</span><span>${Math.round(cf.time/3)}s</span><span>${Math.round(cf.time*2/3)}s</span><span>${cf.time}s</span>`;
+        card.appendChild(barraWrap);
+        card.appendChild(etiquetasWrap);
+
+        // ── Botones de operación directos ─────────────────────
+        if (skull) {
+            // Modo calavera: un solo botón aleatorio
+            const btnSkull = document.createElement('button');
+            btnSkull.style.cssText = `
+                width:100%; padding:10px; border-radius:10px; border:none;
+                background:#1a1a1a; color:#FFD700; font-size:0.95rem;
+                font-weight:bold; cursor:pointer;`;
+            btnSkull.innerText = '💀 DESAFÍO ALEATORIO';
+            btnSkull.onclick = () => {
+                faseActual = i;
+                document.getElementById('modal-fase').style.display = 'none';
+                abrirJuego('?');
+            };
+            card.appendChild(btnSkull);
+        } else {
+            const opsGrid = document.createElement('div');
+            opsGrid.style.cssText = 'display:grid; grid-template-columns:repeat(4,1fr); gap:6px;';
+
+            OPERACIONES_NORMALES.forEach(op => {
+                const k = claveP(n, i, skull, op);
+                const d = prog[k];
+                const disponible = faseDesbloqueadaParaOp(n, i, skull, op);
+
+                const btnOp = document.createElement('button');
+                btnOp.style.cssText = `
+                    padding:8px 4px; border-radius:10px; font-size:1.3rem;
+                    font-weight:bold; text-align:center; border:2px solid;
+                    display:flex; flex-direction:column; align-items:center; gap:2px;`;
+
+                if (!disponible) {
+                    btnOp.disabled = true;
+                    btnOp.style.borderColor = '#eee';
+                    btnOp.style.background = '#f5f5f5';
+                    btnOp.style.color = '#ccc';
+                    btnOp.style.cursor = 'not-allowed';
+                    btnOp.innerHTML = `${OPSIMBOLO[op]}<span style="font-size:0.6rem;">🔒</span>`;
+                } else {
+                    // Estado de la operación
+                    let estadoBadge = '';
+                    if (!d || d.partidas === 0) {
+                        btnOp.style.borderColor = '#ddd';
+                        btnOp.style.background = 'white';
+                        btnOp.style.color = '#555';
+                        estadoBadge = `<span style="font-size:0.6rem;color:#aaa;">—</span>`;
+                    } else if (d.superado) {
+                        btnOp.style.borderColor = '#4CAF50';
+                        btnOp.style.background = '#f1fff3';
+                        btnOp.style.color = '#2e7d32';
+                        estadoBadge = `<span style="font-size:0.6rem;color:#4CAF50;">✅${d.mejorTiempo ? ' '+d.mejorTiempo+'s':''}</span>`;
+                    } else {
+                        btnOp.style.borderColor = '#FF9800';
+                        btnOp.style.background = '#fffde7';
+                        btnOp.style.color = '#e65100';
+                        estadoBadge = `<span style="font-size:0.6rem;color:#FF9800;">🔥${d.partidas}x</span>`;
+                    }
+                    btnOp.innerHTML = `${OPSIMBOLO[op]}${estadoBadge}`;
+                    btnOp.onclick = () => {
+                        faseActual = i;
+                        document.getElementById('modal-fase').style.display = 'none';
+                        abrirJuego(op);
+                    };
+                }
+                opsGrid.appendChild(btnOp);
+            });
+            card.appendChild(opsGrid);
+        }
+
+        cont.appendChild(card);
     });
 
     document.getElementById('modal-fase').style.display = 'flex';
@@ -932,13 +1028,53 @@ function actualizarEstadoHeroe() {
     }
 }
 
+// ─── BARRA DE 6 INTERVALOS DE TIEMPO ──────────────────────────────────────
+const COLORES_INTERVALO = ['#4CAF50','#4CAF50','#8BC34A','#FFB74D','#FF7043','#F44336'];
+
+function inicializarIntervalos() {
+    const cont = document.getElementById('intervalos-tiempo');
+    if (!cont) return;
+    cont.innerHTML = '';
+    for (let i = 0; i < 6; i++) {
+        const bloque = document.createElement('div');
+        bloque.id = 'intervalo_' + i;
+        bloque.className = 'bloque-intervalo activo';
+        bloque.style.background = COLORES_INTERVALO[i];
+        cont.appendChild(bloque);
+    }
+}
+
+function actualizarIntervalos() {
+    // pctRestante: 1 = inicio completo, 0 = tiempo agotado
+    const pctRestante = tiempoRestante / tiempoInicial;
+    // Los bloques se consumen de derecha (bloque 5) a izquierda (bloque 0)
+    // Bloque i está activo si pctRestante > i/6
+    for (let i = 0; i < 6; i++) {
+        const bloque = document.getElementById('intervalo_' + i);
+        if (!bloque) continue;
+        const umbralActivo = i / 6; // bloque 0 muere último, bloque 5 muere primero
+        if (pctRestante > umbralActivo) {
+            bloque.className = 'bloque-intervalo activo';
+        } else {
+            bloque.className = 'bloque-intervalo consumido';
+        }
+    }
+}
+
 function iniciarCronometro() {
     clearInterval(intervaloSegundos);
+    inicializarIntervalos();
+    // Mostrar tiempo inicial correcto ANTES de arrancar (evita el salto de 1 segundo)
+    let m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
+    document.getElementById('timer-display').innerText = `${m}:${s<10?'0'+s:s}`;
+    actualizarEstadoHeroe();
+    actualizarIntervalos();
     intervaloSegundos = setInterval(() => {
         tiempoRestante--;
-        let m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
-        document.getElementById('timer-display').innerText = `${m}:${s<10?'0'+s:s}`;
-        actualizarEstadoHeroe(); // actualizar estado en cada tick
+        let m2 = Math.floor(tiempoRestante/60), s2 = tiempoRestante%60;
+        document.getElementById('timer-display').innerText = `${m2}:${s2<10?'0'+s2:s2}`;
+        actualizarEstadoHeroe();
+        actualizarIntervalos();
         if (tiempoRestante <= 0) { clearInterval(intervaloSegundos); mostrarReporte("⏰ TIEMPO AGOTADO"); }
     }, 1000);
 }
